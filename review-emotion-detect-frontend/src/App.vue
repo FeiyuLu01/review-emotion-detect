@@ -1,11 +1,20 @@
-<script setup></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <!-- Wrap everything in Ant Design ConfigProvider for theme tokens -->
+  <ConfigProvider :theme="{ token: themeTokens }">
+    <DefaultLayout>
+      <router-view />
+    </DefaultLayout>
+  </ConfigProvider>
 </template>
 
-<style scoped></style>
+<script setup>
+// Root keeps minimal: provide layout and router-view
+import { inject } from 'vue'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+
+const themeTokens = inject('themeTokens')
+</script>
+
+<style scoped>
+/* Keep root styles minimal, global styles in styles/index.css */
+</style>
