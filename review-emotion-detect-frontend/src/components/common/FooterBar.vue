@@ -1,28 +1,71 @@
 <template>
-    <div class="footer container">
-      <div class="footer__left">
-        <span>© {{ year }} MoodLens</span>
-      </div>
-      <div class="footer__right">
-        <a-typography-text type="secondary">
-          Designed for healthy online discourse
-        </a-typography-text>
-      </div>
+  <footer class="footer">
+    <div class="footer__left">
+      © 2025 MoodLens
     </div>
-  </template>
-  
-  <script setup>
-  // Simple footer with brand statement
-  const year = new Date().getFullYear()
-  </script>
-  
-  <style scoped>
+
+    <div class="footer__center">
+      <strong>TP03 Group</strong><br />
+      <span class="members">
+        Feiyu Lu · Yao Zhang · Luosong Wang · Zhenyu Wang · Shiyu He · Bingcen Qian
+      </span>
+    </div>
+
+    <div class="footer__right">
+      Designed for healthy online discourse
+    </div>
+  </footer>
+</template>
+
+<script setup>
+// simple footer, no logic needed
+</script>
+
+<style scoped>
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  font-size: 13px;
+  color: #475569;
+  border-top: 1px solid rgba(15, 23, 42, .08);
+  background: transparent;
+}
+
+/* Center column (group info) */
+.footer__center {
+  text-align: center;
+  flex: 1 1 auto;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #334155;
+}
+.footer__center strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+.members {
+  font-size: 12px;
+  color: #475569;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 640px) {
   .footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: #334155;
-    border-top: 1px dashed rgba(15,23,42,.08);
-    padding-top: 12px;
+    flex-direction: column;
+    text-align: center;
   }
-  </style>
+  .footer__left,
+  .footer__right {
+    order: 2;
+    font-size: 12px;
+  }
+  .footer__center {
+    order: 1;
+    margin-bottom: 8px;
+  }
+}
+</style>
