@@ -1,4 +1,12 @@
 <template>
+  <div class="prethink-tip" role="note" aria-live="polite">
+    <a-alert
+      type="warning"
+      show-icon
+      banner
+      :message="prethinkMsg"
+    />
+  </div>
   <div class="analyze container">
     <a-row :gutter="[16,16]">
       <!-- Left: input -->
@@ -6,7 +14,7 @@
         <a-card class="card input-card" :bordered="false">
           <a-typography-title :level="3" style="margin:0 0 6px 0;">Analyze a Review</a-typography-title>
           <a-typography-text type="secondary">
-            Paste any review or short text below. We will analyze its emotions using Hugging Face.
+            Paste any review or short text below. We will analyze its emotions using AI model.
           </a-typography-text>
 
           <a-textarea
@@ -69,20 +77,46 @@
     <!-- ===== Insights (from your backend) - sits below the two cards ===== -->
     <div v-if="insightsLoading || insights.length" class="insights-wrap">
       <a-card class="card insights-card" :bordered="false">
-        <a-typography-title :level="4" style="margin:0 0 12px 0;">How does the review emotion affect you?</a-typography-title>
+        <a-typography-title :level="4" style="margin:0 0 12px 0;">
+          How does the review emotion affect you?
+        </a-typography-title>
 
         <a-spin :spinning="insightsLoading">
           <template v-if="insightsError">
-            <a-alert type="warning" show-icon
+            <a-alert
+              type="warning"
+              show-icon
               message="Failed to load deeper analysis"
-              description="The emotion summary is ready, but the server analysis could not be fetched. You can try Analyze again." />
+              description="The emotion summary is ready, but the server analysis could not be fetched. You can try Analyze again."
+            />
           </template>
 
           <template v-else>
             <template v-if="insights.length">
               <div v-for="(item, idx) in insights" :key="idx" class="insight-item">
-                <a-tag color="blue" class="insight-chip">{{ item.type }}</a-tag>
+                <a-tag :color="colorForTag(item.type)" class="insight-chip">{{ item.type }}</a-tag>
+
+                <!-- Analysis body -->
                 <p class="insight-text">{{ item.analysis }}</p>
+
+                <!-- Reference block -->
+                <div v-if="item.reference" class="ref-block">
+                  <span class="ref-label">Reference: </span>
+                  <a
+                    v-if="item.reference.url"
+                    :href="item.reference.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="ref-link"
+                  >
+                    {{ item.reference.title || item.reference.url }}
+                  </a>
+                  <span v-else class="ref-title">{{ item.reference.title }}</span>
+
+                  <div v-if="item.reference.citation" class="ref-citation">
+                    {{ item.reference.citation }}
+                  </div>
+                </div>
               </div>
             </template>
           </template>
@@ -113,34 +147,99 @@
       </a-card>
     </a-modal>
   </div>
+
+  <!-- —— Suggestion: rewrite prompt (shows when we have insights) —— -->
+  <div
+    v-if="insights.length && !insightsLoading && !insightsError && showRewritePrompt"
+    class="rewrite-suggestion"
+  >
+    <a-alert
+      type="info"
+      show-icon
+      message="This reflects how the emotions in your review may influence readers. Would you like to rewrite your review?"
+      :banner="false"
+    />
+    <div class="rewrite-actions">
+      <a-button type="primary" @click="openRewrite">Rewrite my review</a-button>
+      <a-button type="text" @click="dismissRewrite">No, thanks</a-button>
+    </div>
+  </div>
+
+  <!-- ===== Rewrite modal (independent of charts modal) ===== -->
+  <a-modal
+    v-model:open="rewriteOpen"
+    title="Rewrite your review"
+    :footer="null"
+    width="720px"
+    destroyOnClose
+  >
+    <a-alert class="rewrite-warning" type="warning" show-icon>
+      <template #message>Heads up</template>
+      <template #description>
+        Suggestions prioritize removing profanity and overly strong wording.
+        Because of this, the result can be very similar to your original, or it may slightly change the nuance.
+        Please review carefully before using it as-is.
+      </template>
+    </a-alert>
+
+    <div class="rewrite-form">
+      <div class="rewrite-row">
+        <span class="label">Tone</span>
+        <a-select v-model:value="rewriteTone" style="width: 220px"
+          :options="[
+            { label: 'Neutral (balanced)', value: 'neutral' },
+            { label: 'Positive (constructive)', value: 'positive' },
+            { label: 'Polite (softer)', value: 'polite' },
+          ]"
+        />
+      </div>
+
+      <div class="rewrite-row">
+        <span class="label">Original</span>
+        <a-textarea v-model:value="rewriteInput" :rows="5" disabled/>
+      </div>
+
+      <div class="rewrite-row">
+        <span class="label">Suggestion</span>
+        <a-textarea v-model:value="rewriteOutput" :rows="6" placeholder="Click Rewrite to generate" />
+      </div>
+
+      <div class="rewrite-footer">
+        <a-button @click="doRewrite" type="primary" :loading="rewriteLoading">Rewrite</a-button>
+        <a-button :disabled="!rewriteOutput.trim()" @click="applyRewrite">Replace original</a-button>
+        <a-button type="text" @click="rewriteOpen = false">Close</a-button>
+      </div>
+    </div>
+  </a-modal>
 </template>
 
 <script setup>
-// Analyze page with HF call; modal shows 2 stacked charts: bar + rose pie (7 basic buckets)
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { message } from 'ant-design-vue'
 import * as echarts from 'echarts'
 
+const prethinkMsg = 'MoodLens encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
-// HF (frontend-only for demo; consider proxy for production)
 const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
-// Your backend: receives top-3 original labels (28-class), returns analyses
 const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
+
+/* ✅ 本地重写服务（后端 uvicorn 起在 8000） */
+const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
 /* ---------------------- State ---------------------- */
 const text = ref('')
 const loading = ref(false)
 
-const rawResult = ref(null)        // original HF result list
-const scoresMap = ref({})          // normalized scores {label: 0..1}
+const rawResult = ref(null)
+const scoresMap = ref({})
 const hasScores = computed(() => Object.keys(scoresMap.value).length > 0)
 
-// Insights from your backend (for the bottom section)
-const insights = ref([])           // [{ type, analysis }]
+/* Insights */
+const insights = ref([])           // [{ type, analysis, reference }]
 const insightsLoading = ref(false)
 const insightsError = ref(false)
 
-/* ---------- Tone buckets (for overall tone line) ---------- */
+/* ---------- Tone buckets ---------- */
 const POSITIVE = [
   'admiration','amusement','approval','caring','curiosity','excitement',
   'gratitude','joy','love','optimism','pride','realization','relief'
@@ -151,7 +250,7 @@ const NEGATIVE = [
 ]
 const NEUTRAL = ['neutral']
 
-/* ---------- Mapping 28 labels -> 7 basic emotions (for rose pie) ---------- */
+/* ---------- Mapping 28 -> basic-7 ---------- */
 const BASIC7 = {
   Neutral: ['neutral'],
   Happiness: ['joy','excitement','love','admiration','amusement','approval','gratitude','pride','relief','optimism','caring','curiosity'],
@@ -162,7 +261,7 @@ const BASIC7 = {
   Disgust: ['disgust'],
 }
 
-/* ---------------------- Labels (GoEmotions 27 + neutral) ---------------------- */
+/* ---------- All labels ---------- */
 const ALL_LABELS = [
   'admiration','amusement','anger','annoyance','approval','caring',
   'confusion','curiosity','desire','disappointment','disapproval','disgust',
@@ -171,14 +270,12 @@ const ALL_LABELS = [
   'surprise','neutral'
 ]
 
-/* ---------------------- Data shaping ---------------------- */
-// Sorted full list for texts & (modal) bar chart
+/* ---------- Data shaping ---------- */
 const chartData = computed(() => {
   const arr = ALL_LABELS.map(l => ({ label: l, score: +(scoresMap.value[l] ?? 0) }))
   return arr.sort((a, b) => b.score - a.score)
 })
 
-// Bars to show in modal bar
 const chartTopN = computed(() => {
   const all = ALL_LABELS.map(l => ({ label: l, score: +(scoresMap.value[l] ?? 0) }))
   const positives = all.filter(d => d.score > 0).sort((a, b) => b.score - a.score)
@@ -188,7 +285,7 @@ const chartTopN = computed(() => {
   return positives
 })
 
-/* ---------------------- Tone summary (normalized) ---------------------- */
+/* ---------- Tone summary ---------- */
 function computeToneSummary(map) {
   const sum = (labels) => labels.reduce((s, l) => s + (Number(map[l] || 0)), 0)
   const pos = sum(POSITIVE), neg = sum(NEGATIVE), neu = sum(NEUTRAL)
@@ -207,7 +304,7 @@ const overallTone = computed(() => {
   return `Overall the text is mostly neutral (${topPct}%).`
 })
 
-/* ---------------------- Richer explanation below Summary ---------------------- */
+/* ---------- Extra summary ---------- */
 const extraSummary = computed(() => {
   if (!hasScores.value) return ''
   const { tone } = computeToneSummary(scoresMap.value)
@@ -220,7 +317,7 @@ const extraSummary = computed(() => {
   return `Indicating a more balanced or objective statement. The text contains limited emotional intensity, focusing more on description or factual content rather than strong opinions. Overall, this makes the review come across as calm, informative, and relatively impartial.`
 })
 
-/* ---------------------- Top-3 text (raw) ---------------------- */
+/* ---------- Top-3 raw text ---------- */
 const top3Text = computed(() => {
   if (!chartData.value.length) return ''
   const top = chartData.value.filter(x => x.score > 0).slice(0, 3)
@@ -228,38 +325,38 @@ const top3Text = computed(() => {
   return top.map(x => `${x.label} (${(x.score*100).toFixed(1)}%)`).join(', ')
 })
 
-/* ---------------------- Helpers for backend insights ---------------------- */
-// Pick top-3 labels from 28-class result (no aggregation).
-function pickTop3Labels() {
-  const top = chartData.value.filter(x => x.score > 0).slice(0, 3)
-  // Backend expects an array of strings, e.g. ["joy","sadness","anger"]
-  return top.map(t => t.label)
-}
-
-// Call your backend and populate "insights"
+/* ---------- Backend insights ---------- */
 async function fetchDeeperAnalysis(labelArray) {
-  console.log("[fetch deeper analysis] labelArray = ", labelArray);
-  
   insightsLoading.value = true
   insightsError.value = false
   insights.value = []
+
   try {
     const res = await fetch(BACKEND_ANALYSIS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Send like ["joy","sadness","anger"]
       body: JSON.stringify(labelArray),
     })
     if (!res.ok) throw new Error('Backend analysis API error: ' + res.status)
+
     const json = await res.json()
-    console.log("[fetch deeper analysis] result json: ", json);
-    
-    // Expecting shape: { status:200, data:[ {type, analysis}, ... ] }
-    const list = Array.isArray(json?.data) ? json.data : []
-    // Defensive: ensure type/analysis exist
+    const list =
+      Array.isArray(json?.data?.data) ? json.data.data :
+      Array.isArray(json?.data)       ? json.data :
+      Array.isArray(json)             ? json :
+      []
+
     insights.value = list
       .filter(it => it && typeof it.analysis === 'string')
-      .map(it => ({ type: String(it.type || '').trim() || '—', analysis: it.analysis }))
+      .map(it => ({
+        type: String(it.type || '').trim() || '—',
+        analysis: it.analysis,
+        reference: it.reference ? {
+          title: it.reference.title || '',
+          url: it.reference.url || '',
+          citation: it.reference.citation || ''
+        } : null
+      }))
   } catch (e) {
     console.error(e)
     insightsError.value = true
@@ -268,7 +365,7 @@ async function fetchDeeperAnalysis(labelArray) {
   }
 }
 
-/* ---------------------- Analyze (front-end only) ---------------------- */
+/* ---------- Analyze ---------- */
 async function analyze() {
   if (!text.value.trim()) return
   loading.value = true
@@ -278,7 +375,7 @@ async function analyze() {
     const resp = await fetch(HF_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_HF_TOKEN}`, // local dev only
+        'Authorization': `Bearer ${import.meta.env.VITE_HF_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ inputs: text.value }),
@@ -286,11 +383,9 @@ async function analyze() {
     if (!resp.ok) throw new Error('HF API error: ' + resp.status)
     const data = await resp.json()
 
-    // HF may return [[{label,score},...]] or [{label,score},...]
     const list = Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : []
     rawResult.value = list
 
-    // Normalize into map
     const map = {}
     for (const { label, score } of list) {
       const key = String(label).trim().toLowerCase()
@@ -299,12 +394,6 @@ async function analyze() {
     ALL_LABELS.forEach(l => { if (!(l in map)) map[l] = 0 })
     scoresMap.value = map
 
-    // // === NEW: send top-3 original labels to your backend ===
-    // const top3 = pickTop3Labels()
-    // if (top3.length) {
-    //   await fetchDeeperAnalysis(top3)
-    // }
-    // === Send top-3 aggregated (basic-7) emotions to backend ===
     const top3Basic7 = pickTop3Basic7ForBackend()
     if (top3Basic7.length) {
       await fetchDeeperAnalysis(top3Basic7)
@@ -325,7 +414,7 @@ function reset() {
   insightsError.value = false
 }
 
-/* ---------------------- Modal charts (bar + rose pie) ---------------------- */
+/* ---------- Charts ---------- */
 const detailsOpen = ref(false)
 const modalTitle = computed(() => 'Emotion details')
 
@@ -337,7 +426,6 @@ let pieChart = null
 
 function openDetails() { detailsOpen.value = true }
 
-/* ---- ECharts helpers ---- */
 const BAR_GRADIENTS = [
   ['#22d3ee', '#7c3aed'],
   ['#34d399', '#06b6d4'],
@@ -377,7 +465,6 @@ function buildBarOption(labels, values) {
   }
 }
 
-/* ---- Build Basic-7 dataset from scoresMap (for rose pie) ---- */
 function buildBasic7Data(map) {
   const order = ['Neutral','Happiness','Surprise','Sadness','Fear','Anger','Disgust']
   const raw = {}
@@ -391,23 +478,16 @@ function buildBasic7Data(map) {
   if (total < 1e-12) return order.map(name => ({ name, value: 0 }))
   return order.map(name => ({ name, value: +(raw[name] / total * 100).toFixed(3) }))
 }
-
-// ===== 聚合后取 Top-3，并把 Happiness 改成 Joy =====
-const BASIC7_RENAME_FOR_BACKEND = {
-  Happiness: 'Joy'
-  // 其他 Neutral, Surprise, Sadness, Fear, Anger, Disgust 保持不变
-}
-
+const BASIC7_RENAME_FOR_BACKEND = { Happiness: 'Joy' }
 function pickTop3Basic7ForBackend() {
-  const data7 = buildBasic7Data(scoresMap.value)  // [{name, value}]
+  const data7 = buildBasic7Data(scoresMap.value)
   return data7
     .filter(d => d.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, 3)
-    .map(d => BASIC7_RENAME_FOR_BACKEND[d.name] || d.name) // Happiness → Joy
+    .map(d => BASIC7_RENAME_FOR_BACKEND[d.name] || d.name)
 }
 
-/* ---- Size guard (ant-modal transitions) ---- */
 function waitForSize(el, timeout = 800) {
   return new Promise((resolve) => {
     const t0 = performance.now()
@@ -421,7 +501,6 @@ function waitForSize(el, timeout = 800) {
   })
 }
 
-/* ---- Render modal charts ---- */
 function renderBarModal() {
   if (!modalBarRef.value) return
   modalBarChart?.dispose()
@@ -443,6 +522,7 @@ function renderPie() {
   const COLORS = {
     Neutral:  '#94a3b8',
     Happiness:'#22c55e',
+    Joy:      '#22c55e',
     Surprise: '#f59e0b',
     Sadness:  '#60a5fa',
     Fear:     '#6366f1',
@@ -520,7 +600,22 @@ function renderPie() {
   })
 }
 
-/* ---- Modal lifecycle ---- */
+/* ---------- Tag colors ---------- */
+const TAG_COLORS = {
+  Neutral:  '#94a3b8',
+  Joy:      '#22c55e',
+  Happiness:'#22c55e',
+  Surprise: '#f59e0b',
+  Sadness:  '#60a5fa',
+  Fear:     '#6366f1',
+  Anger:    '#ef4444',
+  Disgust:  '#a78bfa',
+}
+function colorForTag(name) {
+  return TAG_COLORS[name] || '#9ca3af'
+}
+
+/* ---------- Modal lifecycle ---------- */
 async function onModalOpenChange(opened) {
   if (!opened) {
     modalBarChart?.dispose(); modalBarChart = null
@@ -565,6 +660,59 @@ onBeforeUnmount(() => {
   modalBarChart?.dispose(); modalBarChart = null
   pieChart?.dispose();      pieChart = null
 })
+
+/* ---------- Rewrite prompt state ---------- */
+const showRewritePrompt = ref(true)
+function openRewrite() {
+  rewriteInput.value = text.value
+  rewriteOutput.value = ''
+  rewriteOpen.value = true
+}
+function dismissRewrite() { showRewritePrompt.value = false }
+
+/* ---------- Rewrite modal state ---------- */
+const rewriteOpen = ref(false)
+const rewriteTone = ref('neutral')
+const rewriteInput = ref('')
+const rewriteOutput = ref('')
+const rewriteLoading = ref(false)
+
+function normalizeSpaces(str) {
+  return str.replace(/\s+/g, ' ').replace(/\s([?.!,;:])/g, '$1').trim()
+}
+
+/* ✅ 使用本地后端重写（不再走 HF 在线模型） */
+async function doRewrite() {
+  const src = (rewriteInput.value || '').trim()
+  if (!src) return
+  rewriteLoading.value = true
+  try {
+    const resp = await fetch(`${REWRITE_API_BASE}/rewrite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: src, tone: rewriteTone.value })
+    })
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => '')
+      throw new Error(`Rewrite API ${resp.status}: ${txt || resp.statusText}`)
+    }
+    const data = await resp.json()
+    const out = (data && data.text ? data.text : '').trim()
+    rewriteOutput.value = normalizeSpaces(out || src)
+  } catch (e) {
+    console.error(e)
+    message.error('Rewrite failed. Please make sure the local rewrite server is running.')
+  } finally {
+    rewriteLoading.value = false
+  }
+}
+
+function applyRewrite() {
+  if (!rewriteOutput.value.trim()) return
+  text.value = rewriteOutput.value
+  rewriteOpen.value = false
+  message.success('Replaced the original text.')
+}
 </script>
 
 <style scoped>
@@ -607,8 +755,44 @@ onBeforeUnmount(() => {
 .insights-card { border-radius: var(--ml-radius); }
 .insight-item { margin-bottom: 14px; }
 .insight-chip { margin-bottom: 6px; }
-.insight-text { margin: 0; color: #0f172a; line-height: 1.6; }
+.insight-text { margin: 0; color: #0f172a; line-height: 1.6; font-size: 16px; }
+.insight-text strong { font-weight: 600; }
 
 /* Overall tone line should be black */
 .overall-tone { color: #000; font-weight: 500; }
+
+.rewrite-suggestion { margin-top: 16px; padding-top: 4px; }
+.rewrite-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+.rewrite-form .rewrite-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+.rewrite-form .label { color: #334155; font-weight: 600; line-height: 32px; }
+.rewrite-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+.rewrite-warning {
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.prethink-tip {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 16px; 
+}
+
+.prethink-tip :deep(.ant-alert) {
+  max-width: 980px;     
+  width: 100%;
+  border-radius: 10px;
+}
+
+.prethink-tip :deep(.ant-alert-message) {
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+}
 </style>

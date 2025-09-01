@@ -1,1 +1,15 @@
 /.idea/
+
+# Models / weights (keep them local)
+review-emotion-model/models/
+review-emotion-detect/review-emotion-model/models/
+models/
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+*.msgpack
+*.h5
+*.onnx
+*.tflite
+
