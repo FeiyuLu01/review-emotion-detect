@@ -10,4 +10,4 @@ models/
 *.msgpack
 *.h5
 *.onnx
-*.tflite
+*.tflitereview-emotion-detect/review-emotion-model/models/
