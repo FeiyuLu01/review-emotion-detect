@@ -1,20 +1,12 @@
 # Maven
 target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
+!target/*.jar
+!target/classes/
+!target/test-classes/
 
 # IDE
 .idea/
-*.iws
 *.iml
-*.ipr
 .vscode/
 *.swp
 *.swo
@@ -34,9 +26,9 @@ Thumbs.db
 Dockerfile
 .dockerignore
 
-# Test files
-src/test/
-
 # Documentation
 README.md
 *.md
+
+# Test files
+src/test/
