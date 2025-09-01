@@ -58,7 +58,6 @@ public class EmotionAnalysisServiceImpl implements EmotionAnalysisService {
         } else {
             referenceInfo.setTitle(reference.getTitle() != null ? reference.getTitle() : "");
             referenceInfo.setUrl(reference.getUrl() != null ? reference.getUrl() : "");
-            // 直接使用数据库中的citation字段
             referenceInfo.setCitation(reference.getCitation() != null ? reference.getCitation() : "");
         }
         return referenceInfo;
