@@ -19,6 +19,9 @@ RUN mvn clean package -DskipTests
 # Runtime stage
 FROM openjdk:8-jre-alpine
 
+# Install wget for health check
+RUN apk add --no-cache wget
+
 # Create non-root user
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
@@ -38,9 +41,9 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+# Health check with longer timeout and more retries
+HEALTHCHECK --interval=60s --timeout=10s --start-period=180s --retries=5 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/test || exit 1
 
-# Start application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Start application with optimized JVM settings and production profile
+ENTRYPOINT ["java", "-Xms512m", "-Xmx1024m", "-XX:+UseG1GC", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
