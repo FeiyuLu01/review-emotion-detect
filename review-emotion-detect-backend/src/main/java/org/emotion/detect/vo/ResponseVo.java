@@ -17,7 +17,7 @@ public class ResponseVo<T> {
     private ResponseVo(Integer status, T data){
         this.status = status;
         this.data = data;
-        this.msg = "success"; // 添加默认消息
+        this.msg = "success";
     }
 
     public static <T> ResponseVo<T> success(T data){
