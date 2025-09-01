@@ -2,6 +2,7 @@
 
 # Models / weights (keep them local)
 review-emotion-model/models/
+review-emotion-detect/review-emotion-model/models/
 models/
 *.safetensors
 *.bin
@@ -10,4 +11,5 @@ models/
 *.msgpack
 *.h5
 *.onnx
-*.tflitereview-emotion-detect/review-emotion-model/models/
+*.tflite
+
