@@ -2,7 +2,6 @@ package org.emotion.detect.enums;
 
 import lombok.Getter;
 
-@Getter
 public enum ResponseEnum {
     SUCCESS(200,"Successful"),
     SUCCESS_OUT(5,"Logout Successful"),
@@ -17,5 +16,13 @@ public enum ResponseEnum {
     ResponseEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
+    }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 }
