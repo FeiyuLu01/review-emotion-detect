@@ -29,7 +29,7 @@
       <a-col :xs="24" :md="10">
         <a-card class="card result-card" :bordered="false">
           <template v-if="hasScores">
-            <a-typography-title :level="4" style="margin:0 0 12px 0;">Summary</a-typography-title>
+            <a-typography-title :level="4" style="margin:0 0 12px 0;">Emotion Data Insights</a-typography-title>
 
             <!-- Overall tone (normalized shares; always <= 100%) -->
             <a-typography-paragraph v-if="overallTone" class="overall-tone">
@@ -66,6 +66,30 @@
       </a-col>
     </a-row>
 
+    <!-- ===== Insights (from your backend) - sits below the two cards ===== -->
+    <div v-if="insightsLoading || insights.length" class="insights-wrap">
+      <a-card class="card insights-card" :bordered="false">
+        <a-typography-title :level="4" style="margin:0 0 12px 0;">How does the review emotion affect you?</a-typography-title>
+
+        <a-spin :spinning="insightsLoading">
+          <template v-if="insightsError">
+            <a-alert type="warning" show-icon
+              message="Failed to load deeper analysis"
+              description="The emotion summary is ready, but the server analysis could not be fetched. You can try Analyze again." />
+          </template>
+
+          <template v-else>
+            <template v-if="insights.length">
+              <div v-for="(item, idx) in insights" :key="idx" class="insight-item">
+                <a-tag color="blue" class="insight-chip">{{ item.type }}</a-tag>
+                <p class="insight-text">{{ item.analysis }}</p>
+              </div>
+            </template>
+          </template>
+        </a-spin>
+      </a-card>
+    </div>
+
     <!-- ===== Modal: stacked charts (bar -> 7-bucket rose pie) ===== -->
     <a-modal
       v-model:open="detailsOpen"
@@ -97,9 +121,11 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { message } from 'ant-design-vue'
 import * as echarts from 'echarts'
 
-/* ---------------------- Config (HF) ---------------------- */
+/* ---------------------- External endpoints ---------------------- */
+// HF (frontend-only for demo; consider proxy for production)
 const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
-// const HF_ENDPOINT = '/api/hf-goemotions' // use this when you add a proxy on deploy
+// Your backend: receives top-3 original labels (28-class), returns analyses
+const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
 
 /* ---------------------- State ---------------------- */
 const text = ref('')
@@ -108,6 +134,11 @@ const loading = ref(false)
 const rawResult = ref(null)        // original HF result list
 const scoresMap = ref({})          // normalized scores {label: 0..1}
 const hasScores = computed(() => Object.keys(scoresMap.value).length > 0)
+
+// Insights from your backend (for the bottom section)
+const insights = ref([])           // [{ type, analysis }]
+const insightsLoading = ref(false)
+const insightsError = ref(false)
 
 /* ---------- Tone buckets (for overall tone line) ---------- */
 const POSITIVE = [
@@ -120,15 +151,10 @@ const NEGATIVE = [
 ]
 const NEUTRAL = ['neutral']
 
-/* ---------- Mapping 28 labels -> 7 basic emotions (for rose pie) ----------
- * We normalize across all 7 buckets so that they sum to 100%.
- */
+/* ---------- Mapping 28 labels -> 7 basic emotions (for rose pie) ---------- */
 const BASIC7 = {
-  Neutral: ['neutral'],                                          // neutral separated & visualized in gray
-  Happiness: [
-    'joy','excitement','love','admiration','amusement','approval',
-    'gratitude','pride','relief','optimism','caring','curiosity'
-  ],
+  Neutral: ['neutral'],
+  Happiness: ['joy','excitement','love','admiration','amusement','approval','gratitude','pride','relief','optimism','caring','curiosity'],
   Surprise: ['surprise','realization'],
   Sadness: ['sadness','disappointment','grief','remorse','embarrassment'],
   Fear: ['fear','nervousness'],
@@ -146,17 +172,13 @@ const ALL_LABELS = [
 ]
 
 /* ---------------------- Data shaping ---------------------- */
-// Full sorted list for texts & (modal) bar chart
+// Sorted full list for texts & (modal) bar chart
 const chartData = computed(() => {
   const arr = ALL_LABELS.map(l => ({ label: l, score: +(scoresMap.value[l] ?? 0) }))
   return arr.sort((a, b) => b.score - a.score)
 })
 
-/** Bars to show in modal bar:
- * - If positives > 8: show all positives (no truncation).
- * - If positives <= 8: pad zeros to 8 (fixed order).
- * - If no positive: show first 8 zeros.
- */
+// Bars to show in modal bar
 const chartTopN = computed(() => {
   const all = ALL_LABELS.map(l => ({ label: l, score: +(scoresMap.value[l] ?? 0) }))
   const positives = all.filter(d => d.score > 0).sort((a, b) => b.score - a.score)
@@ -175,13 +197,7 @@ function computeToneSummary(map) {
   let tone = 'neutral', top = neuShare
   if (posShare > negShare && posShare > neuShare) { tone = 'positive'; top = posShare }
   else if (negShare > posShare && negShare > neuShare) { tone = 'negative'; top = negShare }
-  return {
-    tone,
-    posPct: +(posShare * 100).toFixed(1),
-    negPct: +(negShare * 100).toFixed(1),
-    neuPct: +(neuShare * 100).toFixed(1),
-    topPct: +(top * 100).toFixed(1)
-  }
+  return { tone, posPct: +(posShare * 100).toFixed(1), negPct: +(negShare * 100).toFixed(1), neuPct: +(neuShare * 100).toFixed(1), topPct: +(top * 100).toFixed(1) }
 }
 const overallTone = computed(() => {
   if (!hasScores.value) return ''
@@ -212,10 +228,52 @@ const top3Text = computed(() => {
   return top.map(x => `${x.label} (${(x.score*100).toFixed(1)}%)`).join(', ')
 })
 
+/* ---------------------- Helpers for backend insights ---------------------- */
+// Pick top-3 labels from 28-class result (no aggregation).
+function pickTop3Labels() {
+  const top = chartData.value.filter(x => x.score > 0).slice(0, 3)
+  // Backend expects an array of strings, e.g. ["joy","sadness","anger"]
+  return top.map(t => t.label)
+}
+
+// Call your backend and populate "insights"
+async function fetchDeeperAnalysis(labelArray) {
+  console.log("[fetch deeper analysis] labelArray = ", labelArray);
+  
+  insightsLoading.value = true
+  insightsError.value = false
+  insights.value = []
+  try {
+    const res = await fetch(BACKEND_ANALYSIS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Send like ["joy","sadness","anger"]
+      body: JSON.stringify(labelArray),
+    })
+    if (!res.ok) throw new Error('Backend analysis API error: ' + res.status)
+    const json = await res.json()
+    console.log("[fetch deeper analysis] result json: ", json);
+    
+    // Expecting shape: { status:200, data:[ {type, analysis}, ... ] }
+    const list = Array.isArray(json?.data) ? json.data : []
+    // Defensive: ensure type/analysis exist
+    insights.value = list
+      .filter(it => it && typeof it.analysis === 'string')
+      .map(it => ({ type: String(it.type || '').trim() || '—', analysis: it.analysis }))
+  } catch (e) {
+    console.error(e)
+    insightsError.value = true
+  } finally {
+    insightsLoading.value = false
+  }
+}
+
 /* ---------------------- Analyze (front-end only) ---------------------- */
 async function analyze() {
   if (!text.value.trim()) return
   loading.value = true
+  insights.value = []
+  insightsError.value = false
   try {
     const resp = await fetch(HF_ENDPOINT, {
       method: 'POST',
@@ -240,6 +298,17 @@ async function analyze() {
     }
     ALL_LABELS.forEach(l => { if (!(l in map)) map[l] = 0 })
     scoresMap.value = map
+
+    // // === NEW: send top-3 original labels to your backend ===
+    // const top3 = pickTop3Labels()
+    // if (top3.length) {
+    //   await fetchDeeperAnalysis(top3)
+    // }
+    // === Send top-3 aggregated (basic-7) emotions to backend ===
+    const top3Basic7 = pickTop3Basic7ForBackend()
+    if (top3Basic7.length) {
+      await fetchDeeperAnalysis(top3Basic7)
+    }
   } catch (err) {
     console.error(err)
     message.error('Failed to analyze. Please try again.')
@@ -252,6 +321,8 @@ function reset() {
   text.value = ''
   rawResult.value = null
   scoresMap.value = {}
+  insights.value = []
+  insightsError.value = false
 }
 
 /* ---------------------- Modal charts (bar + rose pie) ---------------------- */
@@ -267,7 +338,6 @@ let pieChart = null
 function openDetails() { detailsOpen.value = true }
 
 /* ---- ECharts helpers ---- */
-// Bar gradients (unchanged from your earlier design)
 const BAR_GRADIENTS = [
   ['#22d3ee', '#7c3aed'],
   ['#34d399', '#06b6d4'],
@@ -307,11 +377,8 @@ function buildBarOption(labels, values) {
   }
 }
 
-/* ---- Build Basic-7 dataset from scoresMap ----
- * Normalize across the 7 buckets so that they sum to 100%.
- */
+/* ---- Build Basic-7 dataset from scoresMap (for rose pie) ---- */
 function buildBasic7Data(map) {
-  // keep the displayed order stable & meaningful
   const order = ['Neutral','Happiness','Surprise','Sadness','Fear','Anger','Disgust']
   const raw = {}
   let total = 0
@@ -321,13 +388,23 @@ function buildBasic7Data(map) {
     raw[key] = sum
     total += sum
   }
-  if (total < 1e-12) {
-    return order.map(name => ({ name, value: 0 }))
-  }
-  return order.map(name => ({
-    name,
-    value: +(raw[name] / total * 100).toFixed(3) // percent share
-  }))
+  if (total < 1e-12) return order.map(name => ({ name, value: 0 }))
+  return order.map(name => ({ name, value: +(raw[name] / total * 100).toFixed(3) }))
+}
+
+// ===== 聚合后取 Top-3，并把 Happiness 改成 Joy =====
+const BASIC7_RENAME_FOR_BACKEND = {
+  Happiness: 'Joy'
+  // 其他 Neutral, Surprise, Sadness, Fear, Anger, Disgust 保持不变
+}
+
+function pickTop3Basic7ForBackend() {
+  const data7 = buildBasic7Data(scoresMap.value)  // [{name, value}]
+  return data7
+    .filter(d => d.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3)
+    .map(d => BASIC7_RENAME_FOR_BACKEND[d.name] || d.name) // Happiness → Joy
 }
 
 /* ---- Size guard (ant-modal transitions) ---- */
@@ -374,16 +451,12 @@ function renderPie() {
   }
   const color = data7.map(d => COLORS[d.name] || '#9ca3af')
 
-  // threshold: hide label & labelLine if value < 2%
   const HIDE_THRESHOLD = 2
-
-  // build per-slice options so small slices have no label & no guide line
   const seriesData = data7.map(d => {
     const tooSmall = d.value < HIDE_THRESHOLD && d.name !== 'Neutral'
     return {
       name: d.name,
       value: d.value,
-      // turn both off when too small
       label: tooSmall ? { show: false } : undefined,
       labelLine: tooSmall ? { show: false } : undefined,
     }
@@ -424,18 +497,12 @@ function renderPie() {
         }
       },
       labelLine: {
-        length: 14,
-        length2: 10,
-        smooth: 0.2,
+        length: 14, length2: 10, smooth: 0.2,
         lineStyle: { color: '#94a3b8' }
       },
-      labelLayout: {
-        hideOverlap: true,
-        moveOverlap: 'shiftY'
-      },
+      labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
       emphasis: {
-        scale: true,
-        scaleSize: 8,
+        scale: true, scaleSize: 8,
         itemStyle: { shadowBlur: 15, shadowColor: 'rgba(2,6,23,.18)' },
         label: { show: true }
       },
@@ -447,11 +514,7 @@ function renderPie() {
       top: '47%',
       style: {
         text: 'Overall\nEmotion',
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: 700,
-        lineHeight: 20,
-        fill: '#0f172a'
+        textAlign: 'center', fontSize: 16, fontWeight: 700, lineHeight: 20, fill: '#0f172a'
       }
     }]
   })
@@ -477,7 +540,6 @@ async function onModalOpenChange(opened) {
   })
 }
 
-// Safety: some Ant versions only update v-model
 watch(detailsOpen, async (opened) => {
   if (!opened) return
   await nextTick()
@@ -518,9 +580,7 @@ onBeforeUnmount(() => {
 .chart { width: 100%; height: 280px; }
 .chart--tall { height: 320px; width: 100%; }
 
-.mt16 { margin-top: 16px; }
-
-/* Centered CTA with gradient border */
+/* CTA button */
 .more-details { display:flex; justify-content:center; margin: 10px 0 4px 0; }
 .details-cta {
   padding: 10px 18px; border-radius: 999px; font-weight: 600; letter-spacing: .1px;
@@ -541,6 +601,13 @@ onBeforeUnmount(() => {
 
 /* inner cards inside modal */
 .inside-card { border-radius: 12px; }
+
+/* insights section (bottom, full width) */
+.insights-wrap { margin-top: 16px; margin-bottom: 24px; }
+.insights-card { border-radius: var(--ml-radius); }
+.insight-item { margin-bottom: 14px; }
+.insight-chip { margin-bottom: 6px; }
+.insight-text { margin: 0; color: #0f172a; line-height: 1.6; }
 
 /* Overall tone line should be black */
 .overall-tone { color: #000; font-weight: 500; }
