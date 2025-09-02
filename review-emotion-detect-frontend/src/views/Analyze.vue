@@ -223,8 +223,8 @@ const prethinkMsg = 'MoodLens encourages all users to critically reflect before 
 const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
 const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
 
-/* ✅ 本地重写服务（后端 uvicorn 起在 8000） */
-const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
+/*  8000 */
+const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || '/api').replace(/\/+$/, '')
 
 /* ---------------------- State ---------------------- */
 const text = ref('')
