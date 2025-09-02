@@ -4,7 +4,7 @@
       <img class="logo" src="/favicon.svg" alt="MoodLens" />
       <div class="brand">
         <span class="brand__name">MoodLens</span>
-        <span class="brand__tag">Foster Digital Citizenship</span>
+        <span class="brand__tag">Find Review Emotion</span>
       </div>
     </div>
 
