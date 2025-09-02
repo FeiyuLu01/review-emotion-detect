@@ -1,17 +1,25 @@
 export async function onRequest(context) {
   const { request, env } = context;
 
-  //  http://3.104.35.168:8000
-  const ORIGIN = env.BACKEND_URL;
+  const ORIGIN = env.BACKEND_URL; // "http://3.104.35.168:8000"
 
   const inUrl = new URL(request.url);
   const upstreamPath = inUrl.pathname.replace(/^\/api/, "") + inUrl.search;
   const target = ORIGIN.replace(/\/+$/, "") + upstreamPath;
 
-  const init = {
-    method: request.method,
-    headers: request.headers,
-  };
+  const targetUrl = new URL(target);
+  const headers = new Headers(request.headers);
+
+  headers.set("Host", targetUrl.host);
+  headers.set("Accept", "application/json, */*");
+  headers.delete("Origin");
+  headers.delete("Referer");
+  headers.delete("CF-Connecting-IP");
+  headers.delete("CF-IPCountry");
+  headers.delete("X-Forwarded-Host");
+  headers.delete("X-Forwarded-Proto");
+
+  const init = { method: request.method, headers };
 
   if (!["GET", "HEAD"].includes(request.method)) {
     init.body = request.body;
@@ -19,10 +27,13 @@ export async function onRequest(context) {
 
   const resp = await fetch(target, init);
 
+  const outHeaders = new Headers(resp.headers);
+  if (!outHeaders.get("content-type")) {
+    outHeaders.set("content-type", "application/json");
+  }
+
   return new Response(resp.body, {
     status: resp.status,
-    headers: {
-      "content-type": resp.headers.get("content-type") || "application/json",
-    },
+    headers: outHeaders,
   });
 }
