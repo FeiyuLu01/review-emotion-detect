@@ -13,3 +13,8 @@ models/
 *.onnx
 *.tflite
 
+
+# env files
+.env*
+review-emotion-detect-frontend/.env.production
+
