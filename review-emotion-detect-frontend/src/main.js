@@ -8,11 +8,7 @@ import './styles/index.css'
 import themeTokens from './theme'
 
 async function bootstrap() {
-  // Load mock only in development when enabled via env
-  if (import.meta.env.VITE_USE_MOCK === 'true') {
-    const { setupMock } = await import('./mock')
-    setupMock()
-  }
+  
 
   const app = createApp(App)
   app.use(createPinia())
