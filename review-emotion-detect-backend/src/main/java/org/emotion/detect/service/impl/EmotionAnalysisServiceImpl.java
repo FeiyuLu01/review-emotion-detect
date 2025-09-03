@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of emotion analysis service
+ * Handles the business logic for analyzing emotions and gathering related data
+ */
 @Service
 public class EmotionAnalysisServiceImpl implements EmotionAnalysisService {
 
@@ -20,15 +24,21 @@ public class EmotionAnalysisServiceImpl implements EmotionAnalysisService {
     @Autowired
     private ReferenceRepository referenceRepository;
 
+    /**
+     * Analyze emotions for each provided emotion type
+     * Gets sentences and references for each emotion type and combines them into analysis
+     */
     @Override
     public EmotionAnalysisResponse analyzeEmotions(List<String> emotionTypes) {
         EmotionAnalysisResponse response = new EmotionAnalysisResponse();
         List<EmotionAnalysisResponse.EmotionAnalysisItem> analysisItems = new ArrayList<>();
 
+        // Process each emotion type
         for (String emotionType : emotionTypes) {
             EmotionAnalysisResponse.EmotionAnalysisItem item = new EmotionAnalysisResponse.EmotionAnalysisItem();
             item.setType(emotionType);
 
+            // Get sentences for this emotion type
             List<String> sentences = studySentenceRepository.findDistinctSentenceTextBySection(emotionType);
             if (sentences.isEmpty()) {
                 item.setAnalysis("No analysis data available for this emotion type at the moment");
@@ -37,6 +47,7 @@ public class EmotionAnalysisServiceImpl implements EmotionAnalysisService {
                 item.setAnalysis(analysis);
             }
 
+            // Get reference information for this emotion type
             ReferenceItem reference = referenceRepository.findFirstReferenceBySection(emotionType);
             EmotionAnalysisResponse.ReferenceInfo referenceInfo = getReferenceInfo(reference);
 
@@ -48,6 +59,10 @@ public class EmotionAnalysisServiceImpl implements EmotionAnalysisService {
         return response;
     }
 
+    /**
+     * Helper method to convert ReferenceItem to ReferenceInfo
+     * Handles null references gracefully
+     */
     private static EmotionAnalysisResponse.ReferenceInfo getReferenceInfo(ReferenceItem reference) {
         EmotionAnalysisResponse.ReferenceInfo referenceInfo = new EmotionAnalysisResponse.ReferenceInfo();
 

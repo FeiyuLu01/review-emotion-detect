@@ -9,9 +9,17 @@ import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration for Swagger/OpenAPI documentation
+ * This sets up the API docs that you can see in the browser
+ */
 @Configuration
 public class OpenApiConfig {
 
+    /**
+     * Creates the OpenAPI configuration bean
+     * This defines how our API documentation looks
+     */
     @Bean
     public OpenAPI springOpenAPI() {
         return new OpenAPI()
