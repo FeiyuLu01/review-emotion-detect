@@ -10,12 +10,12 @@
       </div>
     </a-layout-content>
 
-    <!-- 用 ref 获取 Footer 组件实例；稍后用 $el 取真实元素 -->
+    <!--  ref get Footer conponent； $el get real element -->
     <a-layout-footer ref="footerRef" class="layout__footer">
       <FooterBar />
     </a-layout-footer>
 
-    <!-- Back-to-Top：bottom 随 footer 是否可见动态调整 -->
+    <!-- Back-to-Top -->
     <a-back-top
       :visibilityHeight="threshold"
       :style="{ right: '28px', bottom: backTopBottom + 'px' }"
@@ -60,15 +60,13 @@ onMounted(async () => {
   updateThreshold()
   window.addEventListener('resize', updateThreshold)
 
-  // 等 DOM 真正挂载后再取元素
+  // get element after DOM mounted
   await nextTick()
 
-  // 兼容组件 / 原生元素两种情况
   let footerEl = footerRef.value
-  // ant-design-vue 组件实例有 $el
+  // ant-design-vue component 
   if (footerEl && footerEl.$el) footerEl = footerEl.$el
 
-  // 只有在拿到原生 Element 时才去 observe，避免报错
   if (footerEl instanceof Element) {
     io = new IntersectionObserver(
       entries => {
@@ -78,7 +76,6 @@ onMounted(async () => {
     )
     io.observe(footerEl)
   } else {
-    // 兜底：找 class 选一次（极端情况下）
     const fallback = document.querySelector('.layout__footer')
     if (fallback) {
       io = new IntersectionObserver(
@@ -113,14 +110,12 @@ onBeforeUnmount(() => {
 .layout__content { padding: 32px 0 48px 0; }
 .layout__footer  { background: transparent; padding: 12px 0 32px 0; }
 
-/* BackTop 固定在右下；bottom 由内联 :style 控制 */
 :deep(.ant-back-top) {
   position: fixed;
   right: 28px;
   z-index: 1000;
 }
 
-/* 漂亮的玻璃渐变按钮 */
 .backtop-btn {
   position: relative;
   width: 48px;
@@ -164,7 +159,6 @@ onBeforeUnmount(() => {
   outline-offset: 2px;
 }
 
-/* BackTop 出现时的轻微入场动画 */
 :deep(.ant-back-top .ant-back-top-content) {
   animation: bt-in .18s ease-out both;
 }
