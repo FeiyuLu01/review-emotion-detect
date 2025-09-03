@@ -9,12 +9,8 @@ import lombok.Getter;
 public enum ResponseEnum {
     /** Success response */
     SUCCESS(200,"Successful"),
-    /** Logout success response */
-    SUCCESS_OUT(5,"Logout Successful"),
     /** General server error */
     ERROR(-1,"Server Error"),
-    /** Parameter validation error */
-    PARAM_ERROR(3,"Parameter Error"),
     ;
 
     /** Response status code */
