@@ -1,9 +1,17 @@
 package org.emotion.detect.entity;
 
+/**
+ * Entity class representing a study sentence
+ * This holds data about sentences used for emotion analysis
+ */
 public class StudySentence {
+    /** Unique identifier for the sentence */
     private Integer sentenceId;
+    /** Section/category this sentence belongs to */
     private String section;
+    /** The actual text content of the sentence */
     private String sentenceText;
+    /** Emotion label assigned to this sentence */
     private String goemotionLabel;
 
     public Integer getSentenceId() {

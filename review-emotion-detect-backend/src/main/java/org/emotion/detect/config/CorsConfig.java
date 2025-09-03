@@ -10,9 +10,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 
+/**
+ * CORS configuration to allow cross-origin requests
+ * This lets the frontend call our backend APIs from different domains
+ */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    /**
+     * Configure CORS mappings for all endpoints
+     * Allows requests from any origin with common HTTP methods
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -23,10 +31,14 @@ public class CorsConfig implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 
+    /**
+     * Create a CORS configuration source bean
+     * This provides the same CORS settings as a bean for other components to use
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // 允许所有来源
+        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // Allow all origins
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
