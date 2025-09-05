@@ -221,7 +221,7 @@ import * as echarts from 'echarts'
 const prethinkMsg = 'MoodLens encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
 // const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
-// const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
+const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
 const API_BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/+$/, '')
 const CLASSIFY_URL = `${API_BASE}/classify`
 // const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || API_BASE).replace(/\/+$/, '')
