@@ -220,8 +220,11 @@ import * as echarts from 'echarts'
 
 const prethinkMsg = 'MoodLens encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
-const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
-const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
+// const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
+// const BACKEND_ANALYSIS_ENDPOINT = 'https://review-emotion-detect-backend.onrender.com/emotion_analysis'
+const API_BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/+$/, '')
+const CLASSIFY_URL = `${API_BASE}/classify`
+// const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || API_BASE).replace(/\/+$/, '')
 
 /*  8000 */
 const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || '/api').replace(/\/+$/, '')
@@ -372,18 +375,24 @@ async function analyze() {
   insights.value = []
   insightsError.value = false
   try {
-    const resp = await fetch(HF_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_HF_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inputs: text.value }),
-    })
+    // const resp = await fetch(HF_ENDPOINT, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Authorization': `Bearer ${import.meta.env.VITE_HF_TOKEN}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ inputs: text.value }),
+    // })
+    const resp = await fetch(CLASSIFY_URL, {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify({ text: text.value }),
+   })
     if (!resp.ok) throw new Error('HF API error: ' + resp.status)
+    // const data = await resp.json()
     const data = await resp.json()
-
-    const list = Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : []
+    // const list = Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : []
+    const list = Array.isArray(data?.results) ? data.results : []
     rawResult.value = list
 
     const map = {}
