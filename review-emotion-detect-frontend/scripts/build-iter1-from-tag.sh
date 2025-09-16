@@ -24,7 +24,9 @@ else
   npm install --no-audit --no-fund
 fi
 
-npx vite build --base=/iteration1/ --outDir="$OUT_DIR_REL" --emptyOutDir=false
+npx vite build --base=/iteration1/ --outDir=dist/iteration1 \
+     --mode production \
+     --define:import.meta.env.VITE_ROUTER_BASE=\"/iteration1/\"
 
 popd >/dev/null
 
