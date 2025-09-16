@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "npm run build:all",
     "build:root": "vite build --base=/ --outDir=dist",
-    "build:iter1": "vite build --base=/iteration1/ --outDir=dist/iteration1",
+    "build:iter1": "bash scripts/build-iter1-from-tag.sh",
     "build:all": "npm run build:root && npm run build:iter1",
     "preview": "vite preview",
     "lint": "eslint . --fix",
