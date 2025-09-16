@@ -14,7 +14,8 @@ export async function onRequest(context) {
 
   
   if (url.pathname === '/iteration1' || url.pathname.startsWith('/iteration1/')) {
-    return context.next(); 
+    // return context.next(); 
+    return fetch(new URL('/iteration1/index.html', url.origin), context.env.ASSETS);
   }
 
 
