@@ -36,6 +36,7 @@ public class ResponseVo<T> {
     private ResponseVo(Integer status, T data){
         this.status = status;
         this.data = data;
+        this.msg = "success";
     }
 
     /**
