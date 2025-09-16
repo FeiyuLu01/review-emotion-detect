@@ -48,24 +48,6 @@ public class ResponseVo<T> {
     }
 
     /**
-     * Create a successful response with enum message
-     * @param responseEnum the response enum containing status and message
-     * @return ResponseVo with enum status and message
-     */
-    public static <T> ResponseVo<T> success(ResponseEnum responseEnum){
-        return new ResponseVo<>(responseEnum.getCode(),responseEnum.getDesc());
-    }
-
-    /**
-     * Create an error response with enum message
-     * @param responseEnum the response enum containing error status and message
-     * @return ResponseVo with error status and message
-     */
-    public static <T> ResponseVo<T> error(ResponseEnum responseEnum){
-        return new ResponseVo<>(responseEnum.getCode(),responseEnum.getDesc());
-    }
-
-    /**
      * Create an error response with custom message
      * @param responseEnum the response enum containing error status
      * @param msg custom error message
