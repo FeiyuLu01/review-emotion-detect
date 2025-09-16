@@ -15,6 +15,8 @@ git worktree add --detach "$TMP_DIR" "$TAG_NAME"
 
 pushd "$TMP_DIR/review-emotion-detect-frontend" >/dev/null
 
+OUT_DIR_REL="dist/iteration1"
+
 if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
   npm ci
 else
@@ -22,7 +24,7 @@ else
   npm install --no-audit --no-fund
 fi
 
-npx vite build --base=/iteration1/ --outDir="$DIST_DIR"
+npx vite build --base=/iteration1/ --outDir="$OUT_DIR_REL" --emptyOutDir=false
 
 popd >/dev/null
 
