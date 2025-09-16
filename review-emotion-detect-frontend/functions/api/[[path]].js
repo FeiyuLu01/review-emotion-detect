@@ -10,6 +10,14 @@ export async function onRequest(context) {
   const targetUrl = new URL(target);
   const headers = new Headers(request.headers);
 
+  const url = new URL(context.request.url);
+
+  
+  if (url.pathname === '/iteration1' || url.pathname.startsWith('/iteration1/')) {
+    return context.next(); 
+  }
+
+
   headers.set("Host", targetUrl.host);
   headers.set("Accept", "application/json, */*");
   headers.delete("Origin");
