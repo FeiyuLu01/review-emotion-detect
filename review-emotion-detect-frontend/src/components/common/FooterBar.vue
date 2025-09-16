@@ -8,12 +8,12 @@
 
       <!-- Center: group info + contact + credits -->
       <div class="footer__cell footer__center">
-        <div class="footer__group">
+        <!-- <div class="footer__group">
           <strong>TP03 Group</strong>
           <div class="members">
             Feiyu Lu · Yao Zhang · Luosong Wang · Zhenyu Wang · Shiyu He · Bingcen Qian
           </div>
-        </div>
+        </div> -->
 
         <div class="footer__row">
           <!-- mail icon -->
