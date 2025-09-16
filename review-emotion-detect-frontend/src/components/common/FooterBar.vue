@@ -15,12 +15,12 @@
           </div>
         </div> -->
 
-        <div class="footer__row">
-          <!-- mail icon -->
+        <!-- <div class="footer__row">
+          
           <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16a2 2 0 0 1 2 2v.3l-10 5.7L2 8.3V8a2 2 0 0 1 2-2Zm0 4.2 8 4.6 8-4.6V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" fill="currentColor"/></svg>
           <span>Contact us:</span>
           <a href="mailto:moodlens03@gmail.com" class="link">moodlens03@gmail.com</a>
-        </div>
+        </div> -->
 
         <div class="footer__row">
           <!-- camera icon -->
