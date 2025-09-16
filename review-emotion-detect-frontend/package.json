@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && mkdir -p dist && cp -f public/_redirects dist/_redirects",
+    "build:root": "vite build --base=/ --outDir=dist",
+    "build:iter1": "vite build --base=/iteration1/ --outDir=dist/iteration1",
+    "build:all": "npm run build:root && npm run build:iter1",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
