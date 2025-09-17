@@ -1,57 +1,57 @@
 /* Global baseline: modern, soft, legible UI */
 :root {
-    --ml-bg: linear-gradient(120deg, #f5f3ff 0%, #eefaff 100%);
-    --ml-card: #ffffff;
-    --ml-text: #0f172a;
-    --ml-muted: #475569;
-    --ml-shadow: 0 20px 40px rgba(2, 6, 23, 0.06);
-    --ml-radius: 16px;
-  }
-  
-  /* Reset helpers */
-  * { box-sizing: border-box; }
-  html, body, #app { height: 100%; }
-  body {
-    margin: 0;
-    color: var(--ml-text);
-    background: var(--ml-bg);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-  
-  /* Subtle animated gradient background */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: -20% -10% auto -10%;
-    height: 60vh;
-    background: radial-gradient(600px 200px at 20% 20%, rgba(124,58,237,.18), transparent 60%),
-                radial-gradient(600px 200px at 80% 0%, rgba(6,182,212,.18), transparent 60%);
-    filter: blur(40px);
-    animation: floatGlow 16s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
-  }
-  
-  @keyframes floatGlow {
-    from { transform: translateY(-8px); opacity: .9; }
-    to   { transform: translateY(8px);  opacity: 1;  }
-  }
-  
-  /* Container utility */
-  .container {
-    width: min(1200px, 92vw);
-    margin: 0 auto;
-  }
-  
-  /* Card utility with soft shadow */
-  .card {
-    background: var(--ml-card);
-    border-radius: var(--ml-radius);
-    box-shadow: var(--ml-shadow);
-  }
-  
-  /* AntD fine-tune */
-  .ant-layout-header { line-height: normal; background: transparent; }
-  .ant-typography { color: var(--ml-text); }
+  --ml-bg-color: #e6f0ff; /* site-wide light blue base */
+  --ml-grad: linear-gradient(120deg, #f5f3ff 0%, #eefaff 100%);
+  --ml-card: #ffffff;
+  --ml-text: #0f172a;
+  --ml-muted: #475569;
+  --ml-shadow: 0 20px 40px rgba(2, 6, 23, 0.06);
+  --ml-radius: 16px;
+}
+
+/* Reset helpers */
+* { box-sizing: border-box; }
+
+/* Make the blue truly global and full-screen */
+html, body, #app, .ant-layout, .ant-layout-content {
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--ml-bg-color); /* solid light blue everywhere */
+}
+
+/* Typography baseline */
+body {
+  color: var(--ml-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+
+
+@keyframes floatGlow {
+  from { transform: translateY(-8px); opacity: .9; }
+  to   { transform: translateY(8px);  opacity: 1;  }
+}
+
+/* Container utility */
+.container {
+  width: min(1200px, 92vw);
+  margin: 0 auto;
+}
+
+/* Card utility with soft shadow */
+.card {
+  background: var(--ml-card);
+  border-radius: var(--ml-radius);
+  box-shadow: var(--ml-shadow);
+}
+
+/* AntD fine-tune: keep layout chrome transparent so base blue shows through */
+.ant-layout { background: transparent; }
+.ant-layout-content { background: transparent; }
+.ant-layout-header { line-height: normal; background: transparent; }
+.ant-typography { color: var(--ml-text); }

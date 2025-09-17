@@ -1,530 +1,190 @@
 <template>
-    <!-- Full-bleed carousel, flush under the sticky topbar -->
-    <section class="bleed">
-      <a-carousel
-        ref="carouselRef"
-        :autoplay="false"
-        :autoplaySpeed="4000"
-        :pauseOnHover="false"
-        :pauseOnDotsHover="false"
-        effect="fade"
-        class="ml-carousel"
-        :dots="true"
-        @afterChange="onAfterChange"
-      >
-        <!-- Slide 1 -->
-        <div>
-          <div
-            class="slide"
-            :style="bgStyle(digital01)"
-            role="img"
-            aria-label="See emotions. Spark better talk."
-          >
-            <div class="gradient"></div>
-  
-            <!-- Bottom-right caption (alternates every 2s) -->
-            <h2 class="caption caption--br">
-              <transition name="caption-fade" mode="out-in">
-                <span :key="activeCaptionIndex()">
-                  {{ slideCaptions[0][activeCaptionIndex()] }}
-                </span>
-              </transition>
-            </h2>
-  
-            <!-- CTA to About (keep your text) -->
-            <button
-              type="button"
-              class="cta"
-              @click="goAbout"
-              aria-label="Go to About page"
-            >
-              Learn more about us
-            </button>
-  
-            <!-- Image credit -->
-            <a
-              class="credit"
-              href="https://www.pexels.com/photo/modern-devices-on-stylish-brown-surface-33632612/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Image credit for slide 1 on Pexels (opens in new tab)"
-            >
-              Photo: Pexels
-            </a>
-          </div>
-        </div>
-  
-        <!-- Slide 2 -->
-        <div>
-          <div
-            class="slide"
-            :style="bgStyle(emotion02)"
-            role="img"
-            aria-label="Analyze reviews. Instant insights."
-          >
-            <div class="gradient"></div>
-  
-            <!-- Bottom-right caption (alternates every 2s) -->
-            <h2 class="caption caption--br">
-              <transition name="caption-fade" mode="out-in">
-                <span :key="activeCaptionIndex()">
-                  {{ slideCaptions[1][activeCaptionIndex()] }}
-                </span>
-              </transition>
-            </h2>
-  
-            <!-- CTA to analyze (keep your text) -->
-            <button
-              type="button"
-              class="cta"
-              @click="goAnalyze"
-              aria-label="Go to Analyze page"
-            >
-              What emotions in the review?
-            </button>
-  
-            <!-- Image credit -->
-            <a
-              class="credit"
-              href="https://www.pexels.com/photo/two-yellow-emoji-on-yellow-case-207983/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Image credit for slide 2 on Pexels (opens in new tab)"
-            >
-              Photo: Pexels
-            </a>
-          </div>
-        </div>
-      </a-carousel>
-  
-      <!-- Centered side arrows -->
-      <button
-        class="nav-btn nav-btn--left"
-        aria-label="Previous slide"
-        type="button"
-        @click="prevSlide"
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-  
-      <button
-        class="nav-btn nav-btn--right"
-        aria-label="Next slide"
-        type="button"
-        @click="nextSlide"
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </section>
+  <div class="home-hero">
+    <div class="bg-gradient" aria-hidden="true"></div>
+    <div class="blob blob-1" aria-hidden="true"></div>
+    <div class="blob blob-2" aria-hidden="true"></div>
+    <div class="blob blob-3" aria-hidden="true"></div>
 
-    <!-- Divider -->
-    <hr class="divider" />
-  
-    <!-- ===================== Site Intro Section ===================== -->
-    <section class="intro container">
-      <div class="intro__grid2">
-        <!-- Left: text + cards -->
-        <div class="intro__left">
-          <div class="intro__head">
-            <h2 class="intro__title">What is MoodLens?</h2>
-            <p class="intro__subtitle">
-              MoodLens helps you understand the emotions inside any review — turning raw text into actionable, human-centered insights for healthier online discourse.
-            </p>
-          </div>
-  
-          <!-- Single-column vertical stack -->
-          <div class="intro__grid">
-            <div class="card fade-up" style="--d:0ms">
-              <div class="card__icon">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="card__body">
-                <h3 class="card__title">Quick & clear</h3>
-                <p class="card__text">Paste a review and get an emotion breakdown in seconds with a clean, readable report.</p>
-              </div>
-            </div>
-  
-            <div class="card fade-up" style="--d:80ms">
-              <div class="card__icon">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M12 3l9 5-9 5-9-5 9-5zm0 7l9 5-9 5-9-5 9-5z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="card__body">
-                <h3 class="card__title">Rich emotions</h3>
-                <p class="card__text">Detect a wide range of emotions and tones to understand sentiment beyond positive or negative.</p>
-              </div>
-            </div>
-  
-            <div class="card fade-up" style="--d:160ms">
-              <div class="card__icon">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="card__body">
-                <h3 class="card__title">Respect & safety</h3>
-                <p class="card__text">Designed to encourage constructive dialogue and digital citizenship in every interaction.</p>
-              </div>
+    <!-- 保持内容定宽居中，但外层 hero 是全宽 -->
+    <div class="hero-container hero-content">
+      <div class="hero-grid">
+        <div class="hero-left">
+          <h1 ref="titleRef" class="hero-title gradient-text">
+            See the emotion<br />behind a comment
+          </h1>
+
+          <p ref="subtitleRef" class="hero-subtitle color-pop">
+            A playful, teen-friendly tool to reveal the feelings in any message.
+            Paste a comment, tap <strong>Check</strong>, and get instant insights.
+          </p>
+
+          <div ref="searchRef" class="hero-search">
+            <a-input-search
+              v-model:value="demo"
+              size="large"
+              :enter-button="enterBtn"
+              placeholder="Paste your comment here"
+              @search="goAnalyze"
+              class="hero-searchbar"
+            />
+            <div class="try color-pop-2">
+              Try it! For example: <em>“You don’t know what you’re talking about!”</em>
             </div>
           </div>
-  
-          <div class="intro__cta">
-            <a class="intro__btn" @click.prevent="goAbout" href="/analyze">
-              Want to learn more about us?
-            </a>
+
+          <div class="pill-list">
+            <div class="pill s1">Real-time Emotion Check</div>
+            <div class="pill s2">Teen-friendly Design</div>
+            <div class="pill s3">Private & Safe</div>
           </div>
         </div>
-  
-        <!-- Right: illustration -->
-        <div class="intro__right">
-          <img
-            src="@/assets/digital03.jpg"
-            alt="Person holding smartphone (Unsplash)"
-            class="intro__image"
-          />
-          <a
-            class="credit credit--img"
-            href="https://unsplash.com/photos/person-holding-smartphone-0VGG7cqTwCo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Photo: Unsplash
-          </a>
+
+        <div class="hero-right">
+          <div class="card emo-card ec1"><span class="emo">😠</span><span class="txt">Anger</span></div>
+          <div class="card emo-card ec2"><span class="emo">😊</span><span class="txt">Joy</span></div>
+          <div class="card emo-card ec3"><span class="emo">😟</span><span class="txt">Sadness</span></div>
         </div>
       </div>
-    </section>
 
-    <!-- Divider -->
-    <hr class="divider" />
-  
-    <!-- ===================== Core Feature Section ===================== -->
-    <section class="feature container">
-      <div class="feature__grid">
-        <!-- Left: illustration -->
-        <div class="feature__image">
-          <img src="@/assets/emotion01.jpg" alt="Emotion analysis illustration" />
-          <!-- Pexels credit (this is the one you want to shorten) -->
-          <a
-            class="credit credit--feature"
-            href="https://www.pexels.com/photo/yellow-cube-on-brown-pavement-208147/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Photo: Pexels
-          </a>
-        </div>
-  
-        <!-- Right: concise content + preview -->
-        <div class="feature__content">
-            <div class="feature__head feature__head--center">
-                <h2 class="feature__title">Analyze a review, clearly</h2>
-                <p class="feature__subtitle">
-                Type or paste a review. We leverage the Hugging Face model
-                <span class="mono">SamLowe/roberta-base-go_emotions</span>
-                to estimate emotion probabilities, visualize them with ECharts,
-                and generate a readable report.
-                </p>
-            </div>
+      <section class="intro" ref="introRef">
+        <h2 class="intro-title gradient-text-2">What is MoodLens?</h2>
+        <p class="intro-text color-ink">
+          MoodLens helps teens (16–21) spot the hidden emotions in online comments—so you can respond thoughtfully,
+          avoid misunderstandings, and build healthier conversations. It’s quick, fun, and privacy-aware.
+        </p>
+      </section>
+    </div>
+  </div>
+</template>
 
-            <!-- Steps: now 3 equal columns that fill the row -->
-            <ul class="badges badges--equal">
-                <li class="badge"><span class="dot">1</span>Input text</li>
-                <li class="badge"><span class="dot">2</span>Detect emotions</li>
-                <li class="badge"><span class="dot">3</span>Chart & report</li>
-            </ul>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+gsap.registerPlugin(ScrollTrigger)
 
-            <FeaturePreview />
-        </div>
-      </div>
-    </section>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted, onBeforeUnmount } from 'vue'
-  import { useRouter } from 'vue-router'
-  import digital01 from '@/assets/digital01.jpg'
-  import emotion02 from '@/assets/emotion02.jpg'
-  import FeaturePreview from '@/components/home/FeaturePreview.vue'
-  
-  function bgStyle(src) { return { backgroundImage: `url(${src})` } }
-  
-  const router = useRouter()
-  function goAnalyze() { router.push('/analyze') }
-  function goAbout()   { router.push('/about') }
-  
-  const carouselRef = ref(null)
-  function nextSlide() { carouselRef.value?.next?.() }
-  function prevSlide() { carouselRef.value?.prev?.() }
-  
-  const captionTick = ref(0)
-  const slideCaptions = [
-    ['See emotions. Spark better talk.', 'Foster digital citizenship.'],
-    ['Analyze reviews. Instant insights.', 'Understand tone, write kindly.']
-  ]
-  function activeCaptionIndex() { return captionTick.value % 2 }
-  function onAfterChange() {}
-  
-  let slideTimer = null
-  let captionTimer = null
-  onMounted(() => {
-    slideTimer = setInterval(() => nextSlide(), 4000)
-    captionTimer = setInterval(() => { captionTick.value = (captionTick.value + 1) % 2 }, 2000)
+const router = useRouter()
+const demo = ref('')
+const enterBtn = 'Check'
+const titleRef = ref(null)
+const subtitleRef = ref(null)
+const searchRef = ref(null)
+const introRef = ref(null)
+
+function goAnalyze() { router.push({ path: '/analyze', query: { q: demo.value } }) }
+
+onMounted(() => {
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+  tl.from(titleRef.value, { y: 48, opacity: 0, duration: 0.8 })
+    .from(subtitleRef.value, { y: 28, opacity: 0, duration: 0.6 }, '-=0.4')
+    .from(searchRef.value, { y: 16, opacity: 0, duration: 0.6 }, '-=0.35')
+
+  gsap.to('.emo-card.ec1', { y: -12, duration: 2.2, repeat: -1, yoyo: true })
+  gsap.to('.emo-card.ec2', { y: -18, duration: 2.6, repeat: -1, yoyo: true, delay: 0.2 })
+  gsap.to('.emo-card.ec3', { y: -10, duration: 2.0, repeat: -1, yoyo: true, delay: 0.4 })
+
+  gsap.to('.blob-1', { x: 22, y: -12, duration: 6, repeat: -1, yoyo: true, ease: 'sine.inOut' })
+  gsap.to('.blob-2', { x: -26, y: 16, duration: 7, repeat: -1, yoyo: true, ease: 'sine.inOut' })
+  gsap.to('.blob-3', { x: 18, y: 24, duration: 8, repeat: -1, yoyo: true, ease: 'sine.inOut' })
+
+  gsap.utils.toArray('.pill').forEach((el, i) => {
+    gsap.from(el, {
+      scrollTrigger: { trigger: el, start: 'top 85%' },
+      y: 20, opacity: 0, duration: 0.5, delay: i * 0.08, ease: 'power2.out'
+    })
   })
-  onBeforeUnmount(() => {
-    if (slideTimer) clearInterval(slideTimer)
-    if (captionTimer) clearInterval(captionTimer)
+
+  gsap.from(introRef.value, {
+    scrollTrigger: { trigger: introRef.value, start: 'top 80%' },
+    y: 24, opacity: 0, duration: 0.6
   })
-  </script>
-  
-  <style scoped>
-  /* ===================== Full-bleed container ===================== */
-  .bleed {
-    position: relative;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
-    margin-top: -32px;
-  }
-  
-  /* ===================== Carousel & slides ===================== */
-  .ml-carousel { border-radius: 0; }
-  .slide {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 72px + 32px);
-    min-height: 60vh;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-  }
-  .gradient {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.06) 35%, rgba(0,0,0,.30) 100%);
-  }
-  
-  /* ===================== Caption ===================== */
-  .caption {
-    position: absolute;
-    margin: 0;
-    color: #fff;
-    font-weight: 900;
-    letter-spacing: .2px;
-    line-height: 1.1;
-    font-size: clamp(20px, 3.6vw, 44px);
-    text-shadow: 0 2px 6px rgba(0,0,0,.55);
-    animation: rise .8s ease-out both;
-  }
-  .caption--br {
-    right: max(24px, 3vw);
-    bottom: calc(max(24px, 4vh) + 150px);
-    text-align: right;
-  }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(18px) scale(.98); }
-    to   { opacity: 1; transform: translateY(6px)  scale(1); }
-  }
-  :deep(.ant-carousel .slick-slide) { transition: opacity .6s ease; }
-  
-  /* ===================== Side arrow buttons ===================== */
-  .nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
-    width: 42px; height: 42px;
-    border: none; border-radius: 50%;
-    display: grid; place-items: center;
-    cursor: pointer; color: #fff;
-    background: rgba(15,23,42,.28);
-    backdrop-filter: blur(6px) saturate(140%);
-    box-shadow: 0 6px 18px rgba(2,6,23,.25), inset 0 0 0 1px rgba(255,255,255,.18);
-    transition: transform .15s ease, background .15s ease, box-shadow .15s ease, opacity .2s;
-    opacity: .92;
-  }
-  .nav-btn:hover { transform: translateY(-50%) scale(1.06); background: rgba(15,23,42,.38); }
-  .nav-btn:active { transform: translateY(-50%) scale(0.98); }
-  .nav-btn--left  { left: 24px; }
-  .nav-btn--right { right: 24px; }
-  .nav-btn:focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
-  
-  /* ===================== Carousel dots ===================== */
-  :deep(.ant-carousel .slick-dots) { bottom: 18px; }
-  :deep(.ant-carousel .slick-dots li) { width: 32px; height: 4px; margin: 0 10px; border-radius: 2px; }
-  :deep(.ant-carousel .slick-dots li button) {
-    width: 100%; height: 100%; border-radius: inherit;
-    background: rgba(255,255,255,0.55); opacity: 1;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.18);
-    transition: background .25s ease, box-shadow .25s ease, transform .25s ease;
-  }
-  :deep(.ant-carousel .slick-dots li.slick-active button) {
-    background: linear-gradient(90deg, #7C3AED, #06B6D4);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.18), 0 4px 10px rgba(0,0,0,0.25);
-  }
-  :deep(.ant-carousel .slick-dots li:hover button) { transform: translateY(-1px); }
-  
-  /* ===================== Caption switch animations ===================== */
-  .caption-fade-enter-active,
-  .caption-fade-leave-active { transition: opacity .38s ease, transform .38s ease; }
-  .caption-fade-enter-from,
-  .caption-fade-leave-to { opacity: 0; transform: translateY(6px); }
-  
-  /* ===================== Credit badge (slides) ===================== */
-  .credit {
-    position: absolute;
-    left: max(16px, 2vw);
-    bottom: max(16px, 2vh);
-    z-index: 4;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    font-size: 12px;
-    line-height: 1;
-    color: #e6f0ff;
-    text-decoration: none;
-    border-radius: 999px;
-    background: rgba(15, 23, 42, .38);
-    backdrop-filter: blur(6px) saturate(140%);
-    box-shadow: 0 4px 12px rgba(2,6,23,.25), inset 0 0 0 1px rgba(255,255,255,.15);
-    transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
-  }
-  .credit:hover { transform: translateY(-1px); background: rgba(15, 23, 42, .48); }
-  
-  /* ===================== CTA (slides) ===================== */
-  .cta {
-    position: absolute;
-    right: max(24px, 3vw);
-    bottom: max(24px, 4vh);
-    z-index: 5;
-    padding: 10px 16px;
-    border: 0; border-radius: 999px; cursor: pointer;
-    font-weight: 700; font-size: clamp(14px, 1.4vw, 16px); color: #fff;
-    background: linear-gradient(90deg, #7C3AED, #06B6D4);
-    box-shadow: 0 8px 22px rgba(16, 24, 40, 0.25);
-    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-  }
-  .cta:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(16,24,40,.3); filter: brightness(1.05); }
-  .cta:active { transform: translateY(0); box-shadow: 0 6px 16px rgba(16,24,40,.22); }
-  .cta:focus-visible { outline: 3px solid rgba(124,58,237,.45); outline-offset: 2px; }
-  
-  /* ===================== Intro section ===================== */
-  .intro { padding: 56px 0 28px 0; }
-  .intro__grid2 {
-    display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center;
-  }
-  @media (min-width: 992px) {
-    .intro__grid2 { grid-template-columns: 1fr 1fr; }
-  }
-  .intro__left { display: flex; flex-direction: column; }
-  .intro__head { text-align: center; margin-bottom: 24px; }
-  .intro__title { margin: 0 0 8px 0; font-size: clamp(22px, 3.2vw, 32px); font-weight: 900; letter-spacing: .2px; color: #0f172a; }
-  .intro__subtitle { margin: 0 auto; max-width: 820px; color: #475569; font-size: clamp(14px, 1.6vw, 16px); }
-  
-  /* Cards: vertical stack */
-  .intro__grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 16px; }
-  .card { display: flex; gap: 12px; padding: 16px 18px; border-radius: 16px; background: rgba(255,255,255,.7); backdrop-filter: blur(8px) saturate(140%); box-shadow: 0 8px 24px rgba(2,6,23,.06), 0 1px 0 rgba(2,6,23,.06) inset; transition: transform .18s ease, box-shadow .18s ease; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(2,6,23,.10); }
-  .card__icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: #6d28d9; background: rgba(124,58,237,.12); }
-  .card__title { margin: 0 0 6px 0; font-weight: 800; color: #0f172a; }
-  .card__text  { margin: 0; color: #475569; }
-  
-  .intro__cta { margin-top: 20px; display: flex; justify-content: center; }
-  .intro__btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: 999px; font-weight: 700; color: #fff; background: linear-gradient(90deg, #7C3AED, #06B6D4); text-decoration: none; box-shadow: 0 8px 22px rgba(16,24,40,.2); transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
-  .intro__btn:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(16,24,40,.28); filter: brightness(1.05); }
-  
-  /* Right image + credit */
-  .intro__right { position: relative; display: flex; justify-content: center; }
-  .intro__image { width: 100%; max-width: 560px; border-radius: 24px; box-shadow: 0 18px 40px rgba(2,6,23,.18); }
-  /* keep it short & right-aligned */
-  .credit--img { position: absolute; left: auto; right: 12px; bottom: 12px; font-size: 11px; padding: 4px 8px; background: rgba(0,0,0,0.45); border-radius: 8px; color: #fff; }
-  .credit--img:hover { background: rgba(0,0,0,0.6); }
-  
-  /* Entrance animation for intro cards */
-  .fade-up { opacity: 0; transform: translateY(8px); animation: fadeUp .5s ease forwards; animation-delay: var(--d,0ms); }
-  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-  
-  /* ===================== Core Feature Section ===================== */
-  .feature { padding: 44px 0 16px 0; }
-  .feature__grid { display: grid; grid-template-columns: 1fr; gap: 26px; align-items: center; }
-  @media (min-width: 992px) { .feature__grid { grid-template-columns: 1fr 1.25fr; } }
-  .feature__image { position: relative; }
-  .feature__image img { width: 100%; border-radius: 20px; box-shadow: 0 12px 32px rgba(2,6,23,.1); object-fit: cover; }
-  .feature__content { display: flex; flex-direction: column; gap: 14px; }
-  /* .feature__title { margin: 0; font-weight: 900; font-size: clamp(22px, 3.2vw, 32px); color: #0f172a; } */
-  .feature__title {
-    margin: 0 0 16px 0; /* <-- was 8px */
-    font-size: clamp(22px, 3.2vw, 32px);
-    font-weight: 900;
-    color: #0f172a;
-  }
-  .feature__subtitle { margin: 0; color: #475569; }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-  
-  /* badges row */
-  .badges { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 6px 0; }
-  .badge  { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(124,58,237,.08); color: #3b0764; font-weight: 700; }
-  .badge .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(90deg,#7C3AED,#06B6D4); font-size: 12px; font-weight: 800; }
-  
-  /* >>> FIX: make feature credit short (override .credit left) */
-  .credit--feature {
-    position: absolute;
-    left: auto;          /* <-- key line to cancel base .credit left */
-    right: 12px;
-    bottom: 12px;
-    font-size: 11px;
-    padding: 4px 8px;
-    display: inline-flex;
-    width: auto;
-    white-space: nowrap;
-    background: rgba(0,0,0,0.45);
-    border-radius: 8px;
-    color: #fff;
-    text-decoration: none;
-    transition: background .15s ease;
-  }
-  .credit--feature:hover { background: rgba(0,0,0,0.6); }
+})
+</script>
 
-  /* Center the heading block inside the right column */
-.feature__head--center { 
-  text-align: center;               /* center heading */
-  margin-left: auto; 
-  margin-right: auto; 
-  max-width: 900px;
+<style scoped>
+/* ✅ 改成真正全宽：不再用 100vw/left:-50vw 技巧 */
+.home-hero{
+  position: relative;
+  overflow: hidden;
+  width: 100%;           /* 填满父级（父级是全宽） */
+  margin: 0;
+  padding: 80px 0 72px;  /* 顶部避开 Topbar、底部在 Footer 之前收尾 */
 }
 
-/* Make the 3 badges fill the entire row evenly */
-.badges--equal {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);   /* 3 equal columns */
-  gap: 12px;
-  width: 100%;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+/* 背景层自动跟随 .home-hero 宽度 */
+.bg-gradient{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(255,170,255,.25), transparent 60%),
+    linear-gradient(135deg, #6d28d9 0%, #7c3aed 28%, #3b82f6 60%, #06b6d4 100%);
+}
+.blob{
+  position: absolute; width: 360px; height: 360px; border-radius: 50%;
+  filter: blur(60px); opacity: .45; z-index: 1; pointer-events: none;
+}
+.blob-1{ background:#fb7185; top:8%; left:-80px; }
+.blob-2{ background:#22d3ee; bottom:15%; right:-60px; }
+.blob-3{ background:#a78bfa; top:40%; right:20%; }
+
+/* 中间内容仍定宽居中 */
+.hero-container{ max-width:1120px; margin:0 auto; padding:0 16px; }
+
+/* Grid & Typography（保持不变） */
+.hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:24px; align-items:center; }
+@media (max-width:960px){ .hero-grid{ grid-template-columns:1fr; } }
+
+.hero-title{ font-size:clamp(38px,6vw,66px); line-height:1.06; margin:8px 0 12px; font-weight:900; }
+.gradient-text{
+  background: linear-gradient(90deg,#ffedd5 0%,#ff7ab6 35%,#8b5cf6 65%,#22d3ee 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:0 10px 30px rgba(0,0,0,.22);
 }
 
-.badge {
-  width: 100%;
-  justify-content: center;                
-  text-align: center;
-  padding: 10px 14px;                   
+.hero-subtitle{ margin:6px 0 16px; font-size:clamp(16px,2.2vw,18px); line-height:1.6; }
+.color-pop{ color:#f1f5f9; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+.color-pop strong{ color:#ffe58f; }
+
+.hero-search{ max-width:560px; }
+.hero-searchbar :deep(.ant-input){ background:rgba(255,255,255,.98); color:#0f172a; }
+.hero-searchbar :deep(.ant-input::placeholder){ color:#64748b; }
+.hero-searchbar :deep(.ant-input-group-addon .ant-btn){
+  background: linear-gradient(90deg,#7c3aed,#3b82f6);
+  border:none; color:#fff; font-weight:700;
 }
 
-/* Divider line between sections */
-.divider {
-  border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.08); /* subtle line */
-  margin: 40px auto; /* space above & below */
-  max-width: 960px;  /* keep line not too wide */
+.try{ margin-top:10px; font-size:14px; }
+.color-pop-2{ color:#e2e8f0; text-shadow:0 1px 2px rgba(0,0,0,.25); }
+.try em{ color:#fff; }
+
+.pill-list{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+.pill{
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,.18);
+  color:#fff; border:1px solid rgba(255,255,255,.24);
+  border-radius:999px; padding:8px 14px; font-size:13px;
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
 }
-  </style>
+
+.hero-right{ display:grid; grid-template-columns:repeat(2,minmax(120px,1fr)); gap:14px; align-content:start; justify-items:center; }
+.emo-card{
+  width:170px; height:126px; border-radius:20px;
+  background:rgba(255,255,255,.88); border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 18px 40px rgba(0,18,46,.25);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center;
+}
+.emo-card .emo{ font-size:42px; }
+.emo-card .txt{ font-weight:800; color:#0f172a; }
+
+.intro{ margin-top:56px; max-width:820px; }
+.intro-title{ font-size:26px; margin-bottom:8px; font-weight:900; }
+.gradient-text-2{
+  background: linear-gradient(90deg,#ffe58f 0%,#f472b6 40%,#60a5fa 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.color-ink{ color:#e2e8f0; text-shadow:0 1px 2px rgba(0,0,0,.25); }
+</style>
