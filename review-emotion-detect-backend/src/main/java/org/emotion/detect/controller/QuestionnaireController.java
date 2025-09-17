@@ -1,5 +1,6 @@
 package org.emotion.detect.controller;
 
+import org.emotion.detect.dto.LevelFeedbackResponse;
 import org.emotion.detect.dto.QuestionnaireResponse;
 import org.emotion.detect.service.QuestionnaireService;
 import org.emotion.detect.vo.ResponseVo;
@@ -31,6 +32,23 @@ public class QuestionnaireController {
             return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, e.getMessage());
         } catch (Exception e) {
             return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Error generating questionnaire: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get level feedback based on the user's level
+     * @param level the user's level (1-4)
+     * @return response containing feedback, tips, and references
+     */
+    @GetMapping("/level-feedback")
+    public ResponseVo<LevelFeedbackResponse> getLevelFeedback(@RequestParam("level") int level) {
+        try {
+            LevelFeedbackResponse response = questionnaireService.getLevelFeedback(level);
+            return ResponseVo.success(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, e.getMessage());
+        } catch (Exception e) {
+            return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Error getting level feedback: " + e.getMessage());
         }
     }
 }
