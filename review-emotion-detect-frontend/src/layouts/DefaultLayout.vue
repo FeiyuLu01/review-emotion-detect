@@ -1,9 +1,7 @@
 <template>
   <a-layout class="layout">
     <!-- Topbar（不改你的逻辑与样式） -->
-    <a-layout-header class="layout__header">
-      <TopBar />
-    </a-layout-header>
+    <TopBar />
 
     <!-- Main content -->
     <a-layout-content class="layout__content">
@@ -12,9 +10,9 @@
     </a-layout-content>
 
     <!-- Footer -->
-    <a-layout-footer ref="footerRef" class="layout__footer">
+    <!-- <a-layout-footer ref="footerRef" class="layout__footer">
       <FooterBar />
-    </a-layout-footer>
+    </a-layout-footer> -->
 
     <!-- Back-to-Top -->
     <a-back-top
@@ -85,20 +83,9 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
-/* sticky TopBar 保持不动 */
-.layout__header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: saturate(160%) blur(10px);
-  background: rgba(255, 255, 255, .55);
-  border-bottom: 1px solid rgba(15, 23, 42, .06);
-}
 
 /* ✅ 关键：给内容区整体让出 TopBar 高度（默认 64px） */
 .layout__content {
-  flex: 1 0 auto;
-  padding: 64px 0 0;
   background: transparent;
 }
 
