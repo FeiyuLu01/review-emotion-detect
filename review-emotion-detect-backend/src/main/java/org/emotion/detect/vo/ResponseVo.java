@@ -1,6 +1,7 @@
 package org.emotion.detect.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.emotion.detect.enums.ResponseEnum;
 
@@ -9,14 +10,21 @@ import org.emotion.detect.enums.ResponseEnum;
  * Provides a consistent format for all API responses with status, message, and data
  */
 @Data
-@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class ResponseVo<T> {
     /** Response status code */
+    @JsonProperty("status")
     private Integer status;
     /** Response message */
+    @JsonProperty("msg")
     private String msg;
     /** Response data payload */
+    @JsonProperty("data")
     private T data;
+
+    /**
+     * Default constructor for Jackson
+     */
+    public ResponseVo() {}
 
     /**
      * Private constructor for error responses with message

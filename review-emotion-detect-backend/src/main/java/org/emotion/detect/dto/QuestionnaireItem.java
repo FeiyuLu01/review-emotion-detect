@@ -1,18 +1,20 @@
 package org.emotion.detect.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 /**
  * DTO class representing a questionnaire item
  * Contains the review text and its corresponding emotion type
  */
-@Getter
-@Setter
+@Data
 public class QuestionnaireItem {
     /** The emotion type (e.g., "sad", "happy", "angry") */
+    @JsonProperty("type")
     private String type;
     /** The review text content */
+    @JsonProperty("review")
     private String review;
 
     public QuestionnaireItem() {}
