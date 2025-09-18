@@ -1,26 +1,41 @@
 <template>
-  <div class="topbar container">
-    <div class="left" @click="goHome">
-      <img class="logo" src="/favicon.svg" alt="MoodLens" />
+  <div class="topbar">
+    <div class="brand-section" @click="goHome">
+      <div class="logo">
+        <span class="logo-emoji">😊</span>
+      </div>
       <div class="brand">
         <span class="brand__name">MoodLens</span>
         <span class="brand__tag">Find Review Emotion</span>
       </div>
     </div>
 
-    <a-menu
-      mode="horizontal"
-      :selectedKeys="[selectedKey]"
-      class="menu"
-      @click="onMenuClick"
-    >
-      <a-menu-item key="/home">Home</a-menu-item>
-      <a-menu-item key="/analyze">What emotions in the review?</a-menu-item>
-      <a-menu-item key="/about">About us</a-menu-item>
-      <a-menu-item key="/test">Test</a-menu-item>
-    </a-menu>
-
-    <div class="right"></div>
+    <div class="nav-section">
+      <a 
+        href="/home" 
+        class="nav-link" 
+        :class="{ active: selectedKey === '/home' }"
+        @click.prevent="onMenuClick('/home')"
+      >
+        Home
+      </a>
+      <a 
+        href="/analyze" 
+        class="nav-link" 
+        :class="{ active: selectedKey === '/analyze' }"
+        @click.prevent="onMenuClick('/analyze')"
+      >
+        What emotions in the review?
+      </a>
+      <a 
+        href="/about" 
+        class="nav-link" 
+        :class="{ active: selectedKey === '/about' }"
+        @click.prevent="onMenuClick('/about')"
+      >
+        About us
+      </a>
+    </div>
   </div>
 </template>
 
@@ -39,108 +54,168 @@ const selectedKey = computed(() => {
   return '/home'
 })
 
-function onMenuClick({ key }) {
+function onMenuClick(key) {
   if (key !== route.path) router.push(key)
 }
-function goHome() { router.push('/home') }
+
+function goHome() { 
+  router.push('/home') 
+}
 </script>
 
 <style scoped>
+/* 主容器 - 纯紫色背景 */
 .topbar {
-  height: 64px;
-
-  /* ✅ 用 flex 真正把中间菜单居中，左右独立定位 */
   position: relative;
+  z-index: 10;
+  background: #7c3aed;
+  padding: 20px 60px;
+  border-bottom: 1px solid white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 品牌区域 */
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.brand-section:hover {
+  opacity: 0.8;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* 给左右各留一点内边距，避免贴边 */
-  padding: 0 20px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 左侧品牌固定在左边，不参与居中计算 */
-.left {
-  position: absolute;
-  left: 20px; top: 0; bottom: 0;
-  display: flex; align-items: center; gap: 12px;
-  cursor: pointer;
+.logo-emoji {
+  font-size: 24px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
-.logo { width: 28px; height: 28px; }
+.brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
 
-.brand { display: flex; flex-direction: column; line-height: 1.1; }
 .brand__name {
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: .2px;
-  background: linear-gradient(90deg, #7C3AED, #06B6D4);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shine 6s ease-in-out infinite alternate;
-}
-.brand__tag { font-size: 12px; color: #475569; }
-.brand__name, .brand__tag { line-height: 1.1; }
-
-@keyframes shine {
-  from { filter: drop-shadow(0 0 0 rgba(124,58,237,.0)); }
-  to   { filter: drop-shadow(0 2px 8px rgba(6,182,212,.25)); }
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.5px;
 }
 
-/* 右侧预留（将来放按钮也不影响中间居中） */
-.right {
+.brand__tag {
+  font-size: 14px;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  font-weight: 400;
+}
+
+/* 导航区域 */
+.nav-section {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 0;
+  position: relative;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.nav-link:hover {
+  color: white;
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  color: white;
+  font-weight: 600;
+}
+
+.nav-link.active::after {
+  content: '';
   position: absolute;
-  right: 20px; top: 0; bottom: 0;
-  display: flex; align-items: center;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 2px;
+  background: white;
+  border-radius: 1px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* 菜单处于容器几何中心 */
-.menu {
-  margin: 0 auto;
-  border-bottom: none;
-  min-width: max-content;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 20px 40px;
+  }
+  
+  .nav-section {
+    gap: 20px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+  }
+  
+  .brand__name {
+    font-size: 20px;
+  }
+  
+  .brand__tag {
+    font-size: 12px;
+  }
 }
 
-/* AntD 定制保持不变 */
-:deep(.ant-menu),
-:deep(.ant-menu-horizontal) { background: transparent !important; border-bottom: none !important; }
-:deep(.ant-menu-overflow) { overflow: visible !important; max-width: none !important; flex-wrap: nowrap !important; }
-:deep(.ant-menu-overflow .ant-menu-overflow-item) { flex: 0 0 auto !important; }
-:deep(.ant-menu-overflow-item-rest) { display: none !important; }
-:deep(.ant-menu-horizontal) { line-height: 64px; height: 64px; }
-
-:deep(.ant-menu-light .ant-menu-item),
-:deep(.ant-menu-light .ant-menu-submenu) { background: transparent !important; }
-
-:deep(.ant-menu-horizontal:not(.ant-menu-dark) .ant-menu-item:hover) {
-  background: transparent !important;
-  color: #7C3AED !important;
-}
-:deep(.ant-menu-light .ant-menu-item-selected) {
-  background: transparent !important;
-  color: #7C3AED !important;
-  font-weight: 700;
-}
-
-/* 下划线控制 */
-:deep(.ant-menu-horizontal > .ant-menu-item::after),
-:deep(.ant-menu-horizontal > .ant-menu-submenu::after) {
-  border-bottom-color: transparent !important;
-}
-:deep(.ant-menu-horizontal > .ant-menu-item:hover::after),
-:deep(.ant-menu-horizontal > .ant-menu-submenu:hover::after) {
-  border-bottom-color: #7C3AED !important;
-}
-:deep(.ant-menu-horizontal > .ant-menu-item-selected::after),
-:deep(.ant-menu-horizontal > .ant-menu-submenu-selected::after) {
-  border-bottom-color: #7C3AED !important;
-  transform: scaleX(1) !important;
-}
-
-/* 小屏时左右留白缩小，避免遮住菜单 */
-@media (max-width: 640px) {
-  .topbar { padding: 0 12px; }
-  .left { left: 12px; }
-  .right { right: 12px; }
+@media (max-width: 480px) {
+  .topbar {
+    padding: 20px 20px;
+  }
+  
+  .nav-section {
+    gap: 16px;
+  }
+  
+  .nav-link {
+    font-size: 13px;
+  }
+  
+  .brand-section {
+    gap: 8px;
+  }
+  
+  .logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .logo-emoji {
+    font-size: 20px;
+  }
 }
 </style>

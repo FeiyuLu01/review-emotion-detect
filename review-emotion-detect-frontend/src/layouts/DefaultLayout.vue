@@ -1,9 +1,7 @@
 <template>
   <a-layout class="layout">
-    <!-- Topbar -->
-    <a-layout-header class="layout__header">
-      <TopBar />
-    </a-layout-header>
+    <!-- Topbar（不改你的逻辑与样式） -->
+    <TopBar />
 
     <!-- Main content -->
     <a-layout-content class="layout__content">
@@ -11,9 +9,9 @@
     </a-layout-content>
 
     <!-- Footer -->
-    <a-layout-footer ref="footerRef" class="layout__footer">
+    <!-- <a-layout-footer ref="footerRef" class="layout__footer">
       <FooterBar />
-    </a-layout-footer>
+    </a-layout-footer> -->
 
     <!-- Back-to-Top -->
     <a-back-top
@@ -97,25 +95,9 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
-/* sticky TopBar */
-.layout__header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: saturate(160%) blur(10px);
-  background: rgba(255, 255, 255, .55);
-  border-bottom: 1px solid rgba(15, 23, 42, .06);
-  height: var(--header-h);
-  line-height: var(--header-h);
-  min-height: 64px;
-  display: flex;
-  align-items: center;
-}
 
 /* 内容区给 header 腾出空间 */
 .layout__content {
-  flex: 1 0 auto;
-  padding: var(--header-h) 0 0;  /* ✅ 关键，只改一处即可全站生效 */
   background: transparent;
 }
 
