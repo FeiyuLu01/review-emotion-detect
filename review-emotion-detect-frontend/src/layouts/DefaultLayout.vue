@@ -1,13 +1,12 @@
 <template>
   <a-layout class="layout">
-    <!-- Topbar（不改你的逻辑与样式） -->
+    <!-- Topbar -->
     <a-layout-header class="layout__header">
       <TopBar />
     </a-layout-header>
 
     <!-- Main content -->
     <a-layout-content class="layout__content">
-      <!-- ✅ 移除了多余的 container 包裹，保证 full-bleed 正常 -->
       <slot />
     </a-layout-content>
 
@@ -43,12 +42,14 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import TopBar from '@/components/common/TopBar.vue'
 import FooterBar from '@/components/common/FooterBar.vue'
 
+/* ===== BackTop 出现阈值：随视口变化 ===== */
 const threshold = ref(240)
 function updateThreshold() {
   const half = Math.round(window.innerHeight * 0.5)
   threshold.value = Math.max(180, Math.min(half, 360))
 }
 
+/* ===== 观察 Footer 是否进入视口，避免 BackTop 与 Footer 重叠 ===== */
 const footerRef = ref(null)
 const footerInView = ref(false)
 let io = null
@@ -59,14 +60,22 @@ onMounted(async () => {
   window.addEventListener('resize', updateThreshold)
   await nextTick()
 
-  let footerEl = footerRef.value
-  if (footerEl && footerEl.$el) footerEl = footerEl.$el
-  if (footerEl instanceof Element) {
+  // 兼容不同渲染形态，尽可能取到真实 DOM
+  let el = footerRef.value
+  el = el?.$el ?? el
+  // ant-design-vue v3+ 这里一般已经是真实 DOM；若仍是组件，取 $el
+  if (el && el.nodeType !== 1 && el.$el) el = el.$el
+
+  if (el instanceof Element) {
     io = new IntersectionObserver(
-      entries => { footerInView.value = !!entries[0]?.isIntersecting },
-      { root: null, threshold: 0.01 }
+      (entries) => { footerInView.value = !!entries[0]?.isIntersecting },
+      {
+        root: null,
+        threshold: 0,               // 只要有一丁点进入就算
+        rootMargin: '0px 0px -10% 0px', // 提前一点点触发，体验更稳
+      }
     )
-    io.observe(footerEl)
+    io.observe(el)
   }
 })
 
@@ -78,6 +87,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 可配置的头部高度（默认 64px） */
+:root { --header-h: 64px; }
+
 .layout {
   min-height: 100vh;
   position: relative;
@@ -85,7 +97,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
-/* sticky TopBar 保持不动 */
+/* sticky TopBar */
 .layout__header {
   position: sticky;
   top: 0;
@@ -93,25 +105,30 @@ onBeforeUnmount(() => {
   backdrop-filter: saturate(160%) blur(10px);
   background: rgba(255, 255, 255, .55);
   border-bottom: 1px solid rgba(15, 23, 42, .06);
+  height: var(--header-h);
+  line-height: var(--header-h);
+  min-height: 64px;
+  display: flex;
+  align-items: center;
 }
 
-/* ✅ 关键：给内容区整体让出 TopBar 高度（默认 64px） */
+/* 内容区给 header 腾出空间 */
 .layout__content {
   flex: 1 0 auto;
-  padding: 64px 0 0;
+  padding: var(--header-h) 0 0;  /* ✅ 关键，只改一处即可全站生效 */
   background: transparent;
 }
 
-/* ✅ 关键：Footer 始终用站点浅蓝底，且在上层（不显示渐变） */
+/* Footer：不收缩，背景使用站点色 */
 .layout__footer  {
   background: var(--ml-bg-color);
   position: relative;
   z-index: 2;
   padding: 12px 0 32px 0;
-  flex-shrink: 0;
+  flex-shrink: 0;               /* ✅ 杜绝极少数场景被压缩 */
 }
 
-/* Back-to-top：保持原样 */
+/* Back-to-top 固定在右下，带炫酷按钮样式 */
 :deep(.ant-back-top) { position: fixed; right: 28px; z-index: 1000; }
 .backtop-btn {
   position: relative; width: 48px; height: 48px; border: none; border-radius: 999px;
@@ -133,4 +150,16 @@ onBeforeUnmount(() => {
 
 :deep(.ant-back-top .ant-back-top-content) { animation: bt-in .18s ease-out both; }
 @keyframes bt-in { from { opacity: 0; transform: scale(.92);} to { opacity: 1; transform: scale(1);} }
+
+/* 让 TopBar 根元素吃满 header 高度并成为 flex 容器 */
+.layout__header :deep(> *) {
+  height: var(--header-h);       /* 关键：跟 header 一样高 */
+  display: flex;                 /* 自身也用 flex */
+  align-items: center;           /* 垂直居中 TopBar 内的内容 */
+}
+
+.layout__header :deep(.ant-menu-horizontal) {
+  height: var(--header-h);
+  line-height: var(--header-h);
+}
 </style>

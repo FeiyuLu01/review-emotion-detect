@@ -17,6 +17,7 @@
       <a-menu-item key="/home">Home</a-menu-item>
       <a-menu-item key="/analyze">What emotions in the review?</a-menu-item>
       <a-menu-item key="/about">About us</a-menu-item>
+      <a-menu-item key="/test">Test</a-menu-item>
     </a-menu>
 
     <div class="right"></div>
@@ -34,6 +35,7 @@ const selectedKey = computed(() => {
   const p = route.path
   if (p.startsWith('/analyze')) return '/analyze'
   if (p.startsWith('/about')) return '/about'
+  if (p.startsWith('/test')) return '/test'
   return '/home'
 })
 
@@ -46,13 +48,25 @@ function goHome() { router.push('/home') }
 <style scoped>
 .topbar {
   height: 64px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+
+  /* ✅ 用 flex 真正把中间菜单居中，左右独立定位 */
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+
+  /* 给左右各留一点内边距，避免贴边 */
+  padding: 0 20px;
 }
 
-.left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+/* 左侧品牌固定在左边，不参与居中计算 */
+.left {
+  position: absolute;
+  left: 20px; top: 0; bottom: 0;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+
 .logo { width: 28px; height: 28px; }
 
 .brand { display: flex; flex-direction: column; line-height: 1.1; }
@@ -66,14 +80,28 @@ function goHome() { router.push('/home') }
   animation: shine 6s ease-in-out infinite alternate;
 }
 .brand__tag { font-size: 12px; color: #475569; }
+.brand__name, .brand__tag { line-height: 1.1; }
 
 @keyframes shine {
   from { filter: drop-shadow(0 0 0 rgba(124,58,237,.0)); }
   to   { filter: drop-shadow(0 2px 8px rgba(6,182,212,.25)); }
 }
 
-/* Center menu, transparent background, and disable overflow collapse */
-.menu { justify-self: center; border-bottom: none; min-width: max-content; }
+/* 右侧预留（将来放按钮也不影响中间居中） */
+.right {
+  position: absolute;
+  right: 20px; top: 0; bottom: 0;
+  display: flex; align-items: center;
+}
+
+/* 菜单处于容器几何中心 */
+.menu {
+  margin: 0 auto;
+  border-bottom: none;
+  min-width: max-content;
+}
+
+/* AntD 定制保持不变 */
 :deep(.ant-menu),
 :deep(.ant-menu-horizontal) { background: transparent !important; border-bottom: none !important; }
 :deep(.ant-menu-overflow) { overflow: visible !important; max-width: none !important; flex-wrap: nowrap !important; }
@@ -81,11 +109,9 @@ function goHome() { router.push('/home') }
 :deep(.ant-menu-overflow-item-rest) { display: none !important; }
 :deep(.ant-menu-horizontal) { line-height: 64px; height: 64px; }
 
-/* Remove default light theme background on items */
 :deep(.ant-menu-light .ant-menu-item),
 :deep(.ant-menu-light .ant-menu-submenu) { background: transparent !important; }
 
-/* Text color on hover/selected */
 :deep(.ant-menu-horizontal:not(.ant-menu-dark) .ant-menu-item:hover) {
   background: transparent !important;
   color: #7C3AED !important;
@@ -96,25 +122,25 @@ function goHome() { router.push('/home') }
   font-weight: 700;
 }
 
-/* ===== Underline control (fix multi-highlight) ===== */
-/* Base: hide underline for all items by default */
+/* 下划线控制 */
 :deep(.ant-menu-horizontal > .ant-menu-item::after),
 :deep(.ant-menu-horizontal > .ant-menu-submenu::after) {
-  border-bottom-color: transparent !important;  /* important: hide when not active */
+  border-bottom-color: transparent !important;
 }
-
-/* Hover: show purple underline */
 :deep(.ant-menu-horizontal > .ant-menu-item:hover::after),
 :deep(.ant-menu-horizontal > .ant-menu-submenu:hover::after) {
   border-bottom-color: #7C3AED !important;
 }
-
-/* Selected: show purple underline */
 :deep(.ant-menu-horizontal > .ant-menu-item-selected::after),
 :deep(.ant-menu-horizontal > .ant-menu-submenu-selected::after) {
   border-bottom-color: #7C3AED !important;
-  transform: scaleX(1) !important; /* ensure full width */
+  transform: scaleX(1) !important;
 }
 
-.right { justify-self: end; }
+/* 小屏时左右留白缩小，避免遮住菜单 */
+@media (max-width: 640px) {
+  .topbar { padding: 0 12px; }
+  .left { left: 12px; }
+  .right { right: 12px; }
+}
 </style>

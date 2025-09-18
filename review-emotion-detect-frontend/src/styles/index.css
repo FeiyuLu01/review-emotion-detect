@@ -7,13 +7,14 @@
   --ml-muted: #475569;
   --ml-shadow: 0 20px 40px rgba(2, 6, 23, 0.06);
   --ml-radius: 16px;
+  --header-h: 64px;
 }
 
 /* Reset helpers */
 * { box-sizing: border-box; }
 
 /* Make the blue truly global and full-screen */
-html, body, #app, .ant-layout, .ant-layout-content {
+html, body, #app, .ant-layout {
   height: 100%;
   min-height: 100vh;
   width: 100%;
@@ -21,6 +22,25 @@ html, body, #app, .ant-layout, .ant-layout-content {
   padding: 0;
   background: var(--ml-bg-color); /* solid light blue everywhere */
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20% -10% auto -10%;
+  height: 60vh;
+  background: radial-gradient(600px 200px at 20% 20%, rgba(124,58,237,.18), transparent 60%),
+              radial-gradient(600px 200px at 80% 0%, rgba(6,182,212,.18), transparent 60%);
+  filter: blur(40px);
+  animation: floatGlow 16s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ant-layout-content {
+    height: auto !important;
+    min-height: 0;
+    background: transparent;
+  }
 
 /* Typography baseline */
 body {
@@ -53,5 +73,5 @@ body {
 /* AntD fine-tune: keep layout chrome transparent so base blue shows through */
 .ant-layout { background: transparent; }
 .ant-layout-content { background: transparent; }
-.ant-layout-header { line-height: normal; background: transparent; }
+.ant-layout-header { background: transparent; }
 .ant-typography { color: var(--ml-text); }

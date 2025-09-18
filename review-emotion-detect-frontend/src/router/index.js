@@ -32,6 +32,12 @@ const routes = [
     component: () => import('@/views/About.vue'),
   },
   {
+    path: '/test',
+    name: 'Test',
+    meta: { title: 'Test - MoodLens' },
+    component: () => import('@/views/Test.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     meta: { title: 'Not Found - MoodLens' },
