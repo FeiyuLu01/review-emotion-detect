@@ -1,20 +1,26 @@
 <template>
-  <div class="prethink-tip" role="note" aria-live="polite">
-    <a-alert
-      type="warning"
-      show-icon
-      banner
-      :message="prethinkMsg"
-    />
-  </div>
-  <div class="analyze container">
-    <a-row :gutter="[16,16]">
-      <!-- Left: input -->
-      <a-col :xs="24" :md="14">
+  <!-- Full-screen Hero -->
+  <HeroAnalyze />
+
+  <!-- Main grid: left flow rail + right stacked cards -->
+  <div class="analyze-main page-grid">
+    <!-- Left: flow rail (auto highlights via activeKey; sections 4–5 highlight on scroll) -->
+    <AnalyzeFlowRail :activeKey="flowKey" />
+
+    <!-- Right: five stage cards stacked vertically -->
+    <div class="flow-content">
+      <!-- S1: Input (visible before Analyze; auto hidden when loading or results exist) -->
+      <section id="section-input" class="stage-card" data-stage="input" v-show="!loading && !hasScores">
+        <div class="prethink-tip" role="note" aria-live="polite">
+          <a-alert type="warning" show-icon banner :message="prethinkMsg" />
+        </div>
+
         <a-card class="card input-card" :bordered="false">
-          <a-typography-title :level="3" style="margin:0 0 6px 0;">Analyze a Review</a-typography-title>
+          <a-typography-title :level="3" class="hero-gradient-title" style="margin:0 0 6px 0;">
+            Analyze a Review
+          </a-typography-title>
           <a-typography-text type="secondary">
-            Paste any review or short text below. We will analyze its emotions using AI model.
+            Paste any review or short text below. We will analyze its emotions using an AI model.
           </a-typography-text>
 
           <a-textarea
@@ -31,10 +37,19 @@
             <a-button size="large" :disabled="loading" @click="reset">Clear</a-button>
           </div>
         </a-card>
-      </a-col>
+      </section>
 
-      <!-- Right: result (text-only summary + CTA) -->
-      <a-col :xs="24" :md="10">
+      <!-- S2: Loading (auto after clicking Analyze until API returns) -->
+      <section id="section-loading" class="stage-card" data-stage="loading" v-show="loading">
+        <a-card class="card result-card" :bordered="false">
+          <a-typography-title :level="4" style="margin:0 0 12px 0;">Analyzing…</a-typography-title>
+          <a-skeleton active :paragraph="{ rows: 4 }" />
+          <a-spin class="mt16" tip="Please wait" />
+        </a-card>
+      </section>
+
+      <!-- S3: Results (auto when API data is available) -->
+      <section id="section-results" class="stage-card" data-stage="results" v-show="hasScores && !loading">
         <a-card class="card result-card" :bordered="false">
           <template v-if="hasScores">
             <a-typography-title :level="4" style="margin:0 0 12px 0;">Emotion Data Insights</a-typography-title>
@@ -54,7 +69,7 @@
               {{ extraSummary }}
             </a-typography-paragraph>
 
-            <!-- Centered CTA button to open modal -->
+            <!-- CTA to open modal -->
             <div class="more-details">
               <a-button
                 class="details-cta"
@@ -71,84 +86,99 @@
             <a-empty description="Results will appear here." />
           </template>
         </a-card>
-      </a-col>
-    </a-row>
+      </section>
 
-    <!-- ===== Insights (from your backend) - sits below the two cards ===== -->
-    <div v-if="insightsLoading || insights.length" class="insights-wrap">
-      <a-card class="card insights-card" :bordered="false">
-        <a-typography-title :level="4" style="margin:0 0 12px 0;">
-          How does the review emotion affect you?
-        </a-typography-title>
+      <!-- S4: Scientific Evidence (reveals when scrolled into view; user-controlled) -->
+      <section id="section-evidence" class="stage-card" data-stage="evidence">
+        <a-card class="card insights-card" :bordered="false">
+          <a-typography-title :level="4" style="margin:0 0 12px 0;">
+            How does the review emotion affect you?
+          </a-typography-title>
 
-        <a-spin :spinning="insightsLoading">
-          <template v-if="insightsError">
-            <a-alert
-              type="warning"
-              show-icon
-              message="Failed to load deeper analysis"
-              description="The emotion summary is ready, but the server analysis could not be fetched. You can try Analyze again."
-            />
-          </template>
+          <a-spin :spinning="insightsLoading">
+            <template v-if="insightsError">
+              <a-alert
+                type="warning"
+                show-icon
+                message="Failed to load deeper analysis"
+                description="The emotion summary is ready, but the server analysis could not be fetched. You can try Analyze again."
+              />
+            </template>
 
-          <template v-else>
-            <template v-if="insights.length">
-              <div v-for="(item, idx) in insights" :key="idx" class="insight-item">
-                <a-tag :color="colorForTag(item.type)" class="insight-chip">{{ item.type }}</a-tag>
+            <template v-else>
+              <template v-if="insights.length">
+                <div v-for="(item, idx) in insights" :key="idx" class="insight-item">
+                  <a-tag :color="colorForTag(item.type)" class="insight-chip">{{ item.type }}</a-tag>
 
-                <!-- Analysis body -->
-                <p class="insight-text">{{ item.analysis }}</p>
+                  <!-- Analysis body -->
+                  <p class="insight-text">{{ item.analysis }}</p>
 
-                <!-- Reference block -->
-                <div v-if="item.reference" class="ref-block">
-                  <span class="ref-label">Reference: </span>
-                  <a
-                    v-if="item.reference.url"
-                    :href="item.reference.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="ref-link"
-                  >
-                    {{ item.reference.title || item.reference.url }}
-                  </a>
-                  <span v-else class="ref-title">{{ item.reference.title }}</span>
+                  <!-- Reference block -->
+                  <div v-if="item.reference" class="ref-block">
+                    <span class="ref-label">Reference: </span>
+                    <a
+                      v-if="item.reference.url"
+                      :href="item.reference.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="ref-link"
+                    >
+                      {{ item.reference.title || item.reference.url }}
+                    </a>
+                    <span v-else class="ref-title">{{ item.reference.title }}</span>
 
-                  <div v-if="item.reference.citation" class="ref-citation">
-                    {{ item.reference.citation }}
+                    <div v-if="item.reference.citation" class="ref-citation">
+                      {{ item.reference.citation }}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </template>
             </template>
-          </template>
-        </a-spin>
-      </a-card>
+          </a-spin>
+        </a-card>
+      </section>
+
+      <!-- S5: Rewrite (reveals when scrolled into view; user-controlled) -->
+      <section id="section-rewrite" class="stage-card" data-stage="rewrite">
+        <a-card class="card inside-card" :bordered="false">
+          <a-typography-title :level="4" style="margin:0 0 12px 0;">Rewrite your review</a-typography-title>
+          <a-typography-text type="secondary">
+            Tweak tone & clarity based on analysis.
+          </a-typography-text>
+
+          <div class="rewrite-actions mt16">
+            <a-button type="primary" @click="openRewrite">Rewrite my review</a-button>
+            <a-button type="text" @click="dismissRewrite">No, thanks</a-button>
+          </div>
+        </a-card>
+      </section>
+
+      <!-- Charts modal (kept as-is) -->
+      <a-modal
+        v-model:open="detailsOpen"
+        :title="modalTitle"
+        width="980px"
+        :footer="null"
+        destroyOnClose
+        @afterOpenChange="onModalOpenChange"
+        @after-visible-change="onModalOpenChange"
+      >
+        <!-- 1) Summary bar -->
+        <a-card :bordered="false" class="inside-card">
+          <a-typography-text type="secondary">Percentage of Each Emotion in Review</a-typography-text>
+          <div ref="modalBarRef" class="chart chart--tall"></div>
+        </a-card>
+
+        <!-- 2) Basic-7 rose pie -->
+        <a-card :bordered="false" class="inside-card mt16">
+          <a-typography-text type="secondary">Basic Emotions Distribution</a-typography-text>
+          <div ref="pieRef" class="chart chart--tall"></div>
+        </a-card>
+      </a-modal>
     </div>
-
-    <!-- ===== Modal: stacked charts (bar -> 7-bucket rose pie) ===== -->
-    <a-modal
-      v-model:open="detailsOpen"
-      :title="modalTitle"
-      width="980px"
-      :footer="null"
-      destroyOnClose
-      @afterOpenChange="onModalOpenChange"
-      @after-visible-change="onModalOpenChange"
-    >
-      <!-- 1) Summary bar (new instance, same data) -->
-      <a-card :bordered="false" class="inside-card">
-        <a-typography-text type="secondary">Percentage of Each Emotion in Review</a-typography-text>
-        <div ref="modalBarRef" class="chart chart--tall"></div>
-      </a-card>
-
-      <!-- 2) Basic-7 rose pie (Happiness, Sadness, Fear, Anger, Surprise, Disgust, Neutral) -->
-      <a-card :bordered="false" class="inside-card mt16">
-        <a-typography-text type="secondary">Basic Emotions Distribution</a-typography-text>
-        <div ref="pieRef" class="chart chart--tall"></div>
-      </a-card>
-    </a-modal>
   </div>
 
-  <!-- —— Suggestion: rewrite prompt (shows when we have insights) —— -->
+  <!-- Rewrite prompt + modal (kept as-is) -->
   <div
     v-if="insights.length && !insightsLoading && !insightsError && showRewritePrompt"
     class="rewrite-suggestion"
@@ -165,7 +195,6 @@
     </div>
   </div>
 
-  <!-- ===== Rewrite modal (independent of charts modal) ===== -->
   <a-modal
     v-model:open="rewriteOpen"
     title="Rewrite your review"
@@ -217,6 +246,11 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { message } from 'ant-design-vue'
 import * as echarts from 'echarts'
+import HeroAnalyze from '@/components/HeroAnalyze.vue'
+import AnalyzeFlowRail from '@/components/AnalyzeFlowRail.vue'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+gsap.registerPlugin(ScrollTrigger)
 
 const prethinkMsg = 'MoodLens encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
@@ -326,6 +360,12 @@ const top3Text = computed(() => {
   const top = chartData.value.filter(x => x.score > 0).slice(0, 3)
   if (!top.length) return ''
   return top.map(x => `${x.label} (${(x.score*100).toFixed(1)}%)`).join(', ')
+})
+
+const flowKey = computed(() => {
+  if (loading.value) return 'loading'
+  if (hasScores.value) return 'results'
+  return 'input'
 })
 
 /* ---------- Backend insights ---------- */
@@ -664,6 +704,18 @@ onMounted(() => {
     modalBarChart?.resize()
     pieChart?.resize()
   })
+
+  const reveal = (id) => {
+    const el = document.querySelector(id)
+    if (!el) return
+    gsap.set(el, { y: 24, opacity: 0 })
+    ScrollTrigger.create({
+      trigger: el, start: 'top 80%', once: true,
+      onEnter: () => gsap.to(el, { y: 0, opacity: 1, duration: .6, ease: 'power2.out' })
+    })
+  }
+  reveal('#section-evidence')
+  reveal('#section-rewrite')
 })
 onBeforeUnmount(() => {
   modalBarChart?.dispose(); modalBarChart = null
@@ -725,8 +777,29 @@ function applyRewrite() {
 </script>
 
 <style scoped>
-.analyze { padding-top: 6px; }
+.page-grid {
+  position: relative; z-index: 1; background: #0a0d1a;
+  display: grid; grid-template-columns: 240px 1fr; gap: 18px;
+  padding: 16px clamp(12px, 3vw, 24px) 24px;
+}
+.flow-content { display: grid; gap: 16px; }
+.stage-card { scroll-margin-top: 88px; } /* 便于锚点滚动停靠 */
+
+@media (max-width: 992px){
+  .page-grid { grid-template-columns: 1fr; }
+}
+
+.analyze { padding-top: 0; }
+/* .analyze { padding-top: 6px; } */
 .mt16 { margin-top: 16px; }
+.analyze-main { position: relative; z-index: 1; background: #0a0d1a; }
+.hero-gradient-title {
+  background: linear-gradient(90deg,#ffb3c1,#9b5de5,#00bbf9,#ffd6a5,#ff006e);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: hueShift 12s linear infinite;
+}
+@keyframes hueShift { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
 
 .input-card, .result-card { border-radius: var(--ml-radius); }
 .actions { display:flex; gap:12px; margin-top: 12px; }

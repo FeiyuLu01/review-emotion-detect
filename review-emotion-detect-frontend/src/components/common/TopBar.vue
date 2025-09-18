@@ -25,15 +25,25 @@
         :class="{ active: selectedKey === '/analyze' }"
         @click.prevent="onMenuClick('/analyze')"
       >
-        What emotions in the review?
+        Aura Interpreter 
       </a>
+
+      <a 
+        href="/test" 
+        class="nav-link" 
+        :class="{ active: selectedKey === '/test' }"
+        @click.prevent="onMenuClick('/test')"
+      >
+        VibeQuest
+      </a>
+
       <a 
         href="/about" 
         class="nav-link" 
         :class="{ active: selectedKey === '/about' }"
         @click.prevent="onMenuClick('/about')"
       >
-        About us
+        About
       </a>
     </div>
   </div>
