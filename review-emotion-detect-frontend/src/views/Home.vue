@@ -47,7 +47,7 @@
         <!-- 小男孩图片 -->
         <div class="character-image">
           <div class="image-container">
-            <img src="/src/assets/Home1.png" alt="小男孩" class="boy-image" />
+            <img src="/src/assets/Home1.png" alt="little boy" class="boy-image" />
           </div>
         </div>
         
