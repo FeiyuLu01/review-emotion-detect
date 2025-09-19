@@ -25,7 +25,7 @@
         :class="{ active: selectedKey === '/analyze' }"
         @click.prevent="onMenuClick('/analyze')"
       >
-        Aura Interpreter 
+        AuraInterpreter 
       </a>
 
       <a 

@@ -252,7 +252,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
-const prethinkMsg = 'MoodLens encourages all users to critically reflect before analyzing emotions on this site.'
+const prethinkMsg = 'Encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
 // const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
 const BACKEND_ANALYSIS_ENDPOINT = 'http://3.27.11.77:8080/emotion_analysis'
