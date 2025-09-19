@@ -183,16 +183,16 @@
     v-if="insights.length && !insightsLoading && !insightsError && showRewritePrompt"
     class="rewrite-suggestion"
   >
-    <a-alert
+    <!-- <a-alert
       type="info"
       show-icon
       message="This reflects how the emotions in your review may influence readers. Would you like to rewrite your review?"
       :banner="false"
-    />
-    <div class="rewrite-actions">
+    /> -->
+    <!-- <div class="rewrite-actions">
       <a-button type="primary" @click="openRewrite">Rewrite my review</a-button>
       <a-button type="text" @click="dismissRewrite">No, thanks</a-button>
-    </div>
+    </div> -->
   </div>
 
   <a-modal
