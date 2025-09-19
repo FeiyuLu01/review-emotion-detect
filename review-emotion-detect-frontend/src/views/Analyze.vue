@@ -143,7 +143,7 @@
         <a-card class="card inside-card" :bordered="false">
           <a-typography-title :level="4" style="margin:0 0 12px 0;">Rewrite your review</a-typography-title>
           <a-typography-text type="secondary">
-            Tweak tone & clarity based on analysis.
+            Adjust tone & clarity based on analysis.
           </a-typography-text>
 
           <div class="rewrite-actions mt16">
