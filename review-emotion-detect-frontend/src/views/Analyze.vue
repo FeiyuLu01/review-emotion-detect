@@ -255,13 +255,13 @@ gsap.registerPlugin(ScrollTrigger)
 const prethinkMsg = 'Encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
 // const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
-const BACKEND_ANALYSIS_ENDPOINT = 'http://3.27.11.77:8080/emotion_analysis'
-const API_BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/+$/, '')
+const BACKEND_ANALYSIS_ENDPOINT = '/api/emotion_analysis'
+const API_BASE = (import.meta.env.VITE_API_BASE || 'https://api.luosong.wang').replace(/\/+$/, '')
 const CLASSIFY_URL = `${API_BASE}/classify`
 // const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || API_BASE).replace(/\/+$/, '')
 
 /*  8000 */
-const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || '/api').replace(/\/+$/, '')
+const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || 'https://api.luosong.wang').replace(/\/+$/, '')
 
 /* ---------------------- State ---------------------- */
 const text = ref('')
