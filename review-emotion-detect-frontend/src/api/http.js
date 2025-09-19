@@ -39,7 +39,7 @@ const http = setupInterceptors(
 // ===== Test 专用接口 =====
 const testHttp = setupInterceptors(
   axios.create({
-    baseURL: (import.meta.env.API_BASE || '').replace(/\/+$/, ''),
+    baseURL: (import.meta.env.VITE_API_BASE || '').replace(/\/+$/, ''),
     timeout: 15000,
   })
 )
