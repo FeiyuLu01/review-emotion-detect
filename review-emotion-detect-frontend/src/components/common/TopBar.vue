@@ -5,7 +5,7 @@
         <span class="logo-emoji">😊</span>
       </div>
       <div class="brand">
-        <span class="brand__name">MoodLens</span>
+        <span class="brand__name">ToneLens</span>
         <span class="brand__tag">Find Review Emotion</span>
       </div>
     </div>

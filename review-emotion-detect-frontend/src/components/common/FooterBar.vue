@@ -3,7 +3,7 @@
     <div class="footer__container">
       <!-- Left: copyright -->
       <div class="footer__cell footer__left">
-        © 2025 MoodLens
+        © 2025 ToneLens
       </div>
 
       <!-- Center: info -->
