@@ -25,9 +25,10 @@ public class QuestionnaireRepositoryImpl implements QuestionnaireRepository {
         @Override
         public LabeledComment mapRow(ResultSet rs, int rowNum) throws SQLException {
             LabeledComment comment = new LabeledComment();
-            comment.setId(rs.getInt("id"));
+            comment.setId(rs.getInt("comment_id"));
             comment.setTextNatural(rs.getString("text_natural"));
             comment.setFineLabels(rs.getString("fine_labels"));
+            comment.setScenario(rs.getString("scenario"));
             comment.setEkmanLabels(rs.getString("ekman_labels"));
             return comment;
         }
@@ -35,8 +36,8 @@ public class QuestionnaireRepositoryImpl implements QuestionnaireRepository {
 
     @Override
     public List<LabeledComment> findRandomLabeledComments(int limit) {
-        // Use labeled_comments table with correct field names
-        String sql = "SELECT id, text_natural, fine_labels, ekman_labels FROM labeled_comments ORDER BY RAND() LIMIT ?";
+        // Try scenarios_comments table first
+        String sql = "SELECT comment_id, scenario, text_natural, fine_labels, ekman_labels FROM scenarios_comments ORDER BY RAND() LIMIT ?";
         System.out.println("Executing SQL: " + sql + " with limit: " + limit);
         try {
             List<LabeledComment> result = jdbcTemplate.query(sql, labeledCommentRowMapper, limit);

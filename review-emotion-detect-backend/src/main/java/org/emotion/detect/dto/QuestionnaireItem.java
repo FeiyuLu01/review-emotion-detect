@@ -17,10 +17,12 @@ public class QuestionnaireItem {
     @JsonProperty("review")
     private String review;
 
-    public QuestionnaireItem() {}
+    @JsonProperty("scenario")
+    private String scenario;
 
-    public QuestionnaireItem(String type, String review) {
+    public QuestionnaireItem(String type, String review, String scenario) {
         this.type = type;
         this.review = review;
+        this.scenario = scenario;
     }
 }
