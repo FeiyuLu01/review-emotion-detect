@@ -5,7 +5,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { isAuthed } from '@/utils/auth'
 
-const HEADER_OFFSET = 88
+const HEADER_OFFSET = 64
  function scrollToHash(hash, offset = HEADER_OFFSET) {
    const el = document.querySelector(hash)
    if (!el) return false
@@ -92,20 +92,5 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
- router.afterEach((to) => {
-     if (!to.hash) return
-     let tries = 0
-     const max = 24            // 最多尝试 ~24 帧（~400ms）
-     const tick = () => {
-       const ok = scrollToHash(to.hash)
-       if (ok) {
-         console.debug('[router] scrolled to', to.hash)
-         return
-       }
-       if (++tries < max) requestAnimationFrame(tick)
-       else console.warn('[router] element not found for hash:', to.hash)
-     }
-     requestAnimationFrame(tick)
-   })
 
 export default router

@@ -92,10 +92,11 @@ const titleRef = ref(null)
 const subtitleRef = ref(null)
 const searchRef = ref(null)
 
+
 function goAnalyze() { 
   const q = demo.value.replace(/\s+/g, ' ').trim()
   if (q) {
-    router.push({ path: '/analyze', query: { q },  hash: '#section-results-anchor' })
+    router.push({ path: '/analyze', query: { q }, hash: '#section-results-anchor' })
   }
 }
 

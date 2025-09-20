@@ -92,6 +92,8 @@
         </a-card>
       </section>
 
+      
+
       <!-- S4: Scientific Evidence (reveals when scrolled into view; user-controlled) -->
       <section id="section-evidence" class="stage-card" data-stage="evidence">
         <a-card class="card insights-card" :bordered="false">
@@ -255,21 +257,11 @@ import AnalyzeFlowRail from '@/components/AnalyzeFlowRail.vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 gsap.registerPlugin(ScrollTrigger)
 const route = useRoute()
 
-onMounted(async () => {
-  if (route.hash === '#after-hero') {
-    await nextTick() // 等待 DOM 渲染
-    const el = document.querySelector(route.hash)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      console.debug('[Analyze] force scroll to', route.hash)
-    } else {
-      console.warn('[Analyze] element not found after mount:', route.hash)
-    }
-  }
-})
 
 const prethinkMsg = 'Encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
@@ -289,6 +281,25 @@ const loading = ref(false)
 const rawResult = ref(null)
 const scoresMap = ref({})
 const hasScores = computed(() => Object.keys(scoresMap.value).length > 0)
+const HEADER_OFFSET = 64
+
+function scrollSectionIntoView(sectionId) {
+  nextTick().then(() => {
+    const el = document.getElementById(sectionId)
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop
+    const target = rect.top + scrollY - HEADER_OFFSET
+    window.scrollTo({ top: target, behavior: 'smooth' })
+  })
+}
+
+// —— watch 修改：在分析完成后滚到结果卡片 —— 
+// watch([hasScores, loading], ([newHas, newLoading], [oldHas, oldLoading]) => {
+//   if (newHas && !newLoading) {
+//     scrollSectionIntoView('section-results-anchor')
+//   }
+// })
 
 /* Insights */
 const insights = ref([])           // [{ type, analysis, reference }]
@@ -428,20 +439,19 @@ async function fetchDeeperAnalysis(labelArray) {
 }
 
 /* ---------- Analyze ---------- */
-async function analyze() {
+async function analyze(options = {}) {
+  const { skipLoadingScroll = false } = options
   if (!text.value.trim()) return
   loading.value = true
+  router.replace({ hash: '#section-loading' })
   insights.value = []
   insightsError.value = false
+  await nextTick()
+  // if (!skipLoadingScroll) {
+  //   scrollSectionIntoView('section-loading')
+  // }
+
   try {
-    // const resp = await fetch(HF_ENDPOINT, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${import.meta.env.VITE_HF_TOKEN}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ inputs: text.value }),
-    // })
     const resp = await fetch(CLASSIFY_URL, {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
@@ -471,6 +481,8 @@ async function analyze() {
     message.error('Failed to analyze. Please try again.')
   } finally {
     loading.value = false
+    router.replace({ hash: '#section-results-anchor' })
+    // scrollSectionIntoView('section-results-anchor')
   }
 }
 
@@ -718,54 +730,39 @@ watch(detailsOpen, async (opened) => {
   })
 })
 
+
+
+
+
 onMounted(() => {
   window.addEventListener('resize', () => {
     modalBarChart?.resize()
     pieChart?.resize()
   })
-
-  const reveal = (id) => {
-    const el = document.querySelector(id)
-    if (!el) return
-    gsap.set(el, { y: 24, opacity: 0 })
-    ScrollTrigger.create({
-      trigger: el, start: 'top 80%', once: true,
-      onEnter: () => gsap.to(el, { y: 0, opacity: 1, duration: .6, ease: 'power2.out' })
-    })
-  }
-  reveal('#section-evidence')
-  reveal('#section-rewrite')
-
-  
 })
 
  // ========== Auto-run when navigated with ?q=... ==========
  onMounted(async () => {
    const q = (route.query.q ?? '').toString().trim()
    if (q) {
-     // 将 Home 传来的内容填入输入框
-     text.value = q
-     // 立即进入分析流程（会自动显示 Loading 卡片，然后展示结果）
-     await nextTick()
-     analyze()
-   }
-
-   if (route.hash === '#section-input') {
-   await nextTick()
-   const el = document.querySelector('#section-input')
-   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
- }
- })
-
- // 若从 Home 再次携带不同 q 进入同一路由（或同页内切换 query），也自动触发
- watch(() => route.query.q, async (nv, ov) => {
-   const q = (nv ?? '').toString().trim()
-   if (q && q !== (ov ?? '').toString().trim()) {
+    if (route.hash) {
+      const noHash = route.fullPath.split('#')[0]
+      window.history.replaceState(null, '', noHash)
+    }
+     // input content that from home page
      text.value = q
      await nextTick()
-     analyze()
+     analyze({ skipLoadingScroll: true })
    }
+   if (route.hash === '#section-results-anchor') {
+     await nextTick()
+     const el = document.querySelector('#section-results-anchor')
+     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+   }
+
+   
  })
+
 
 onBeforeUnmount(() => {
   modalBarChart?.dispose(); modalBarChart = null
@@ -928,6 +925,6 @@ function applyRewrite() {
   font-weight: 600;
 }
 
-#section-input-anchor { scroll-margin-top: 88px; }
-#section-results-anchor { scroll-margin-top: 88px; }
+#section-input-anchor { scroll-margin-top: 64px; }
+#section-results-anchor { scroll-margin-top: 64px; }
 </style>
