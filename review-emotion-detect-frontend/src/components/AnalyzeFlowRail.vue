@@ -160,19 +160,43 @@ onMounted(() => {
     })
 
     // 进度条（evidence -> rewrite）
-    const ev = document.querySelector('#section-evidence')
+    // const ev = document.querySelector('#section-evidence')
+    // const rw = document.querySelector('#section-rewrite')
+    // if (ev && rw) {
+    //   ScrollTrigger.create({
+    //     trigger: ev,
+    //     endTrigger: rw,
+    //     start: 'top center',
+    //     end: 'bottom center',
+    //     scrub: true,
+    //     onUpdate: (self) => {
+    //       if (!barRef.value) return
+    //       const h = Math.max(0, Math.min(1, self.progress)) * 100
+    //       gsap.to(barRef.value, { height: `${h}%`, duration: 0.1, overwrite: true })
+    //     }
+    //   })
+    // }
+    const rs = document.querySelector('#section-results')
     const rw = document.querySelector('#section-rewrite')
-    if (ev && rw) {
+    if (rs && rw) {
       ScrollTrigger.create({
-        trigger: ev,
+        trigger: rs,
         endTrigger: rw,
-        start: 'top center',
-        end: 'bottom center',
+        start: `top center+=-${HEADER_OFFSET}`,
+        end:   `top bottom-=${HEADER_OFFSET}`,
         scrub: true,
         onUpdate: (self) => {
           if (!barRef.value) return
           const h = Math.max(0, Math.min(1, self.progress)) * 100
           gsap.to(barRef.value, { height: `${h}%`, duration: 0.1, overwrite: true })
+        },
+        onLeaveBack: () => {   // 回到 S3 以上，复位为 0%
+          if (!barRef.value) return
+          gsap.to(barRef.value, { height: '0%', duration: 0.1, overwrite: true })
+        },
+        onLeave: () => {       // 超过 S5 顶部，锁到 100%
+          if (!barRef.value) return
+          gsap.to(barRef.value, { height: '100%', duration: 0.1, overwrite: true })
         }
       })
     }
