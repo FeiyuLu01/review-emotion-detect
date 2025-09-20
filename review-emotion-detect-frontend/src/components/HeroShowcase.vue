@@ -36,9 +36,9 @@
             <span class="btn-text">Start practicing</span>
             <div class="btn-glow"></div>
           </button>
-          <button class="ghost" @click="$emit('cta')">
+          <!-- <button class="ghost" @click="$emit('cta')">
             <span class="btn-text">How it works</span>
-          </button>
+          </button> -->
         </div>
   
         <!-- 下滑指示 -->

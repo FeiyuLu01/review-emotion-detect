@@ -15,10 +15,10 @@
         <div class="stacked-cards" ref="leftColRef">
           <a-card class="about-card fill reveal-up" :bordered="false" data-anim="card">
             <a-typography-title :level="2" class="split-title" style="margin:0 0 8px 0">
-              About <span id="brand-about" class="brand brand-anim">MoodLens</span>
+              About <span id="brand-about" class="brand brand-anim">ToneLens</span>
             </a-typography-title>
             <a-typography-paragraph type="secondary" style="margin-bottom:12px">
-              <span class="brand brand-anim">MoodLens</span> is your review <strong>vibe-check</strong>.
+              <span class="brand brand-anim">ToneLens</span> is your review <strong>vibe-check</strong>.
               Paste a short review or comment and instantly see the <strong>emotion mix</strong> —
               then get kinder, clearer ways to say the same thing. Built for fast, friendly,
               <strong>privacy-first</strong> conversations.
@@ -62,7 +62,7 @@
       <a-col :xs="24" :md="14">
         <a-card class="about-card reveal-up" :bordered="false" data-anim="card">
           <a-typography-title :level="4" class="split-title" style="margin:0 0 12px 0">
-            What can <span id="brand-what" class="brand brand-anim">MoodLens</span> do?
+            What can <span id="brand-what" class="brand brand-anim">ToneLens</span> do?
           </a-typography-title>
 
           <div class="feature reveal-fade">
@@ -143,7 +143,7 @@
           <div class="faq-answer">
             <span class="chip chip-a">A</span>
             <div class="faq-answer-body">
-              To keep meaning and your voice, MoodLens makes <strong>minimal edits</strong> unless the tone is strong.
+              To keep meaning and your voice, ToneLens makes <strong>minimal edits</strong> unless the tone is strong.
               Try the <strong>“polite”</strong> or <strong>“positive”</strong> style for a bigger change.
             </div>
           </div>
@@ -300,7 +300,7 @@ gsap.utils.toArray('.reveal-fade').forEach((row) => {
 //   brandTargets.forEach((sel, i) => {
 //   const el = document.querySelector(sel)
 //   if (!el) return
-//   const finalText = el.textContent.trim() || 'MoodLens'
+//   const finalText = el.textContent.trim() || 'ToneLens'
 
 //   ScrollTrigger.create({
 //     trigger: el,
