@@ -5,6 +5,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { isAuthed } from '@/utils/auth'
 
+const HEADER_OFFSET = 88
+ function scrollToHash(hash, offset = HEADER_OFFSET) {
+   const el = document.querySelector(hash)
+   if (!el) return false
+   const y = el.getBoundingClientRect().top + (window.pageYOffset || window.scrollY) - offset
+   window.scrollTo({ top: y, behavior: 'smooth' })
+   return true
+ }
+
 const routes = [
   { path: '/', redirect: '/home' },
   {
@@ -52,9 +61,23 @@ const routerBase =
 const router = createRouter({
   history: createWebHistory(routerBase),
   routes,
-  scrollBehavior() {
-    return { top: 0 }
-  },
+  scrollBehavior(to, from, savedPosition) {
+     // 返回浏览器后退前进的滚动位置
+       if (savedPosition) return savedPosition
+    
+       // 如果带了 hash（如 #section-input），滚到该元素
+       if (to.hash) {
+         return {
+           el: to.hash,
+           // 如果有固定头部，留出偏移（px）
+           top: HEADER_OFFSET,
+           behavior: 'smooth',
+         }
+       }
+    
+       // 默认回到顶部
+       return { left: 0, top: 0, behavior: 'smooth' }
+     },
 })
 
 router.beforeEach((to, from, next) => {
@@ -69,9 +92,20 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-router.afterEach((to) => {
-  const base = import.meta.env.VITE_APP_TITLE || 'MoodLens'
-  document.title = to.meta?.title || base
-})
+ router.afterEach((to) => {
+     if (!to.hash) return
+     let tries = 0
+     const max = 24            // 最多尝试 ~24 帧（~400ms）
+     const tick = () => {
+       const ok = scrollToHash(to.hash)
+       if (ok) {
+         console.debug('[router] scrolled to', to.hash)
+         return
+       }
+       if (++tries < max) requestAnimationFrame(tick)
+       else console.warn('[router] element not found for hash:', to.hash)
+     }
+     requestAnimationFrame(tick)
+   })
 
 export default router

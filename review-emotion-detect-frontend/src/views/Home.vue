@@ -93,8 +93,9 @@ const subtitleRef = ref(null)
 const searchRef = ref(null)
 
 function goAnalyze() { 
-  if (demo.value.trim()) {
-    router.push({ path: '/analyze', query: { q: demo.value } })
+  const q = demo.value.replace(/\s+/g, ' ').trim()
+  if (q) {
+    router.push({ path: '/analyze', query: { q },  hash: '#section-results-anchor' })
   }
 }
 
@@ -150,6 +151,7 @@ onMounted(() => {
   exampleQuotes.forEach(quote => {
     quote.addEventListener('click', () => {
       handleExampleClick(quote.textContent)
+      goAnalyze()
     })
   })
 

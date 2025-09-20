@@ -9,8 +9,10 @@
 
     <!-- Right: five stage cards stacked vertically -->
     <div class="flow-content">
+
+      <div id="section-input-anchor"></div>
       <!-- S1: Input (visible before Analyze; auto hidden when loading or results exist) -->
-      <section id="section-input" class="stage-card" data-stage="input" v-show="!loading && !hasScores">
+      <section id="section-input" class="stage-card" data-stage="input" v-show="!loading || hasScores">
         <div class="prethink-tip" role="note" aria-live="polite">
           <a-alert type="warning" show-icon banner :message="prethinkMsg" />
         </div>
@@ -47,6 +49,8 @@
           <a-spin class="mt16" tip="Please wait" />
         </a-card>
       </section>
+
+      <div id="section-results-anchor"></div>
 
       <!-- S3: Results (auto when API data is available) -->
       <section id="section-results" class="stage-card" data-stage="results" v-show="hasScores && !loading">
@@ -250,7 +254,22 @@ import HeroAnalyze from '@/components/HeroAnalyze.vue'
 import AnalyzeFlowRail from '@/components/AnalyzeFlowRail.vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useRoute } from 'vue-router'
 gsap.registerPlugin(ScrollTrigger)
+const route = useRoute()
+
+onMounted(async () => {
+  if (route.hash === '#after-hero') {
+    await nextTick() // 等待 DOM 渲染
+    const el = document.querySelector(route.hash)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      console.debug('[Analyze] force scroll to', route.hash)
+    } else {
+      console.warn('[Analyze] element not found after mount:', route.hash)
+    }
+  }
+})
 
 const prethinkMsg = 'Encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
@@ -716,7 +735,38 @@ onMounted(() => {
   }
   reveal('#section-evidence')
   reveal('#section-rewrite')
+
+  
 })
+
+ // ========== Auto-run when navigated with ?q=... ==========
+ onMounted(async () => {
+   const q = (route.query.q ?? '').toString().trim()
+   if (q) {
+     // 将 Home 传来的内容填入输入框
+     text.value = q
+     // 立即进入分析流程（会自动显示 Loading 卡片，然后展示结果）
+     await nextTick()
+     analyze()
+   }
+
+   if (route.hash === '#section-input') {
+   await nextTick()
+   const el = document.querySelector('#section-input')
+   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+ }
+ })
+
+ // 若从 Home 再次携带不同 q 进入同一路由（或同页内切换 query），也自动触发
+ watch(() => route.query.q, async (nv, ov) => {
+   const q = (nv ?? '').toString().trim()
+   if (q && q !== (ov ?? '').toString().trim()) {
+     text.value = q
+     await nextTick()
+     analyze()
+   }
+ })
+
 onBeforeUnmount(() => {
   modalBarChart?.dispose(); modalBarChart = null
   pieChart?.dispose();      pieChart = null
@@ -877,4 +927,7 @@ function applyRewrite() {
   text-align: center;
   font-weight: 600;
 }
+
+#section-input-anchor { scroll-margin-top: 88px; }
+#section-results-anchor { scroll-margin-top: 88px; }
 </style>
