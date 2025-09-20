@@ -1,11 +1,7 @@
 <template>
-
     <HeroShowcase ref="heroRef" @cta="scrollToModes" />
 
     <section class="test-hero" ref="modesRef">
-
-        
-
       <!-- orbit 背景（保持你的设定） -->
       <svg class="orbits" viewBox="0 0 600 600" aria-hidden="true">
         <defs>
@@ -749,7 +745,7 @@ function restartFromPanel () {
   <style scoped>
   /* ===== 你的原有样式（标题、stack、卡片等）保持不变，只省略未关键注释 ===== */
   .test-hero{ position: relative; min-height: calc(100vh - 64px); padding: 0 0 88px; overflow: hidden; scroll-margin-top: 24px;}
-  .container{ width: min(1080px, 92vw); margin: 0 auto; }
+  .container{ width: min(1080px, 92vw); margin: 0 auto; padding: 50px 0; }
   .orbits{ position: absolute; width: 1200px; height: 1200px; left: 50%; top: -520px; transform: translateX(-50%); z-index: -1; opacity: .45; }
 
   .sweep-overlay{

@@ -19,37 +19,37 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    meta: { title: 'Login - MoodLens', requiresAuth: false },
+    meta: { title: 'Login - ToneLens', requiresAuth: false },
     component: () => import('@/views/Login.vue'),
   },
   {
     path: '/home',
     name: 'Home',
-    meta: { title: 'Home - MoodLens' },
+    meta: { title: 'Home - ToneLens' },
     component: () => import('@/views/Home.vue'),
   },
   {
     path: '/analyze',
     name: 'Analyze',
-    meta: { title: 'Analyze - MoodLens' },
+    meta: { title: 'Analyze - ToneLens' },
     component: () => import('@/views/Analyze.vue'),
   },
   {
     path: '/about',
     name: 'About',
-    meta: { title: 'About - MoodLens' },
+    meta: { title: 'About - ToneLens' },
     component: () => import('@/views/About.vue'),
   },
   {
     path: '/test',
     name: 'Test',
-    meta: { title: 'Test - MoodLens' },
+    meta: { title: 'Test - ToneLens' },
     component: () => import('@/views/Test.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    meta: { title: 'Not Found - MoodLens' },
+    meta: { title: 'Not Found - ToneLens' },
     component: () => import('@/views/NotFound.vue'),
   },
 ]
