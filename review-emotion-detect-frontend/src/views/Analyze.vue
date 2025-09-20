@@ -258,6 +258,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
+import { API_BASE, ANALYSIS_BASE, REWRITE_BASE } from '@/utils/apiBase'
 const router = useRouter()
 gsap.registerPlugin(ScrollTrigger)
 const route = useRoute()
@@ -266,13 +267,16 @@ const route = useRoute()
 const prethinkMsg = 'Encourages all users to critically reflect before analyzing emotions on this site.'
 /* ---------------------- External endpoints ---------------------- */
 // const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions'
-const BACKEND_ANALYSIS_ENDPOINT = `${import.meta.env.VITE_ANALYSIS_API}/emotion_analysis`
-const API_BASE = (import.meta.env.VITE_API_BASE || 'https://api.luosong.wang').replace(/\/+$/, '')
+// const BACKEND_ANALYSIS_ENDPOINT = `${import.meta.env.VITE_ANALYSIS_API}/emotion_analysis`
+const BACKEND_ANALYSIS_ENDPOINT = `${ANALYSIS_BASE}/emotion_analysis`
+// const API_BASE = (import.meta.env.VITE_API_BASE || 'https://api.luosong.wang').replace(/\/+$/, '')
 const CLASSIFY_URL = `${API_BASE}/classify`
 // const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || API_BASE).replace(/\/+$/, '')
 
 /*  8000 */
 const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || 'https://api.luosong.wang').replace(/\/+$/, '')
+
+
 
 /* ---------------------- State ---------------------- */
 const text = ref('')
@@ -790,12 +794,38 @@ function normalizeSpaces(str) {
 }
 
 /* ✅ 使用本地后端重写（不再走 HF 在线模型） */
+// async function doRewrite() {
+//   const src = (rewriteInput.value || '').trim()
+//   if (!src) return
+//   rewriteLoading.value = true
+//   try {
+//     const resp = await fetch(`${REWRITE_API_BASE}/rewrite`, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ text: src, tone: rewriteTone.value })
+//     })
+//     if (!resp.ok) {
+//       const txt = await resp.text().catch(() => '')
+//       throw new Error(`Rewrite API ${resp.status}: ${txt || resp.statusText}`)
+//     }
+//     const data = await resp.json()
+//     const out = (data && data.text ? data.text : '').trim()
+//     rewriteOutput.value = normalizeSpaces(out || src)
+//   } catch (e) {
+//     console.error(e)
+//     message.error('Rewrite failed. Please make sure the local rewrite server is running.')
+//   } finally {
+//     rewriteLoading.value = false
+//   }
+// }
+
+
 async function doRewrite() {
   const src = (rewriteInput.value || '').trim()
   if (!src) return
   rewriteLoading.value = true
   try {
-    const resp = await fetch(`${REWRITE_API_BASE}/rewrite`, {
+    const resp = await fetch(`${REWRITE_BASE}/rewrite`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: src, tone: rewriteTone.value })
