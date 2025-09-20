@@ -11,6 +11,8 @@ public class LabeledComment {
     private String textNatural;
     /** Fine emotion label assigned to this comment (corresponds to fine_labels field) */
     private String fineLabels;
+
+    private String scenario;
     
     /** Ekman emotion label assigned to this comment (corresponds to ekman_labels field) */
     private String ekmanLabels;
@@ -41,6 +43,14 @@ public class LabeledComment {
 
     public String getEkmanLabels() {
         return ekmanLabels;
+    }
+
+    public String getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(String scenario) {
+        this.scenario = scenario;
     }
 
     public void setEkmanLabels(String ekmanLabels) {

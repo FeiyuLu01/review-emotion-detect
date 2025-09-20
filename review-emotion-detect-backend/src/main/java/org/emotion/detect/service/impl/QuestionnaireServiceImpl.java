@@ -37,7 +37,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         
         // Convert to questionnaire items - use fine_labels as the type
         List<QuestionnaireItem> questionnaireItems = labeledComments.stream()
-                .map(comment -> new QuestionnaireItem(comment.getFineLabels(), comment.getTextNatural()))
+                .map(comment -> new QuestionnaireItem(comment.getFineLabels(), comment.getTextNatural(), comment.getScenario()))
                 .collect(Collectors.toList());
         
         return new QuestionnaireResponse(questionnaireItems);
