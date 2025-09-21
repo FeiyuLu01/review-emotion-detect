@@ -1,7 +1,7 @@
 <template>
     <div class="gate-wrap">
       <a-card class="gate-card" :bordered="false">
-        <div class="logo">🔒 MoodLens</div>
+        <div class="logo">🔒 ToneLens</div>
         <a-typography-title :level="3" style="margin: 8px 0 4px 0">Enter password</a-typography-title>
         <a-typography-text type="secondary">
           This site is password protected for coursework demo.
