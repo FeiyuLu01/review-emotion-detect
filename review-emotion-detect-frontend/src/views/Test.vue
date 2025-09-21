@@ -1,162 +1,179 @@
 <template>
-    <HeroShowcase ref="heroRef" @cta="scrollToModes" />
+  <!-- Hero section with CTA to scroll to modes -->
+  <HeroShowcase ref="heroRef" @cta="scrollToModes" />
 
-    <section class="test-hero" ref="modesRef">
-      <!-- orbit 背景（保持你的设定） -->
-      <svg class="orbits" viewBox="0 0 600 600" aria-hidden="true">
-        <defs>
-          <radialGradient id="g" cx="50%" cy="50%">
-            <stop offset="0%" stop-color="#fff" stop-opacity="0.9" />
-            <stop offset="100%" stop-color="#fff" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <circle cx="300" cy="300" r="140" fill="url(#g)"/>
-        <circle cx="300" cy="300" r="220" fill="url(#g)"/>
-      </svg>
-  
-      <div class="container">
-        <!-- 标题（保留你的 mask 擦出与联动） -->
-        <h1 class="title">
-          <span ref="titlePlainRef" class="title-line title-plain">Select Your</span>
-          <span ref="titleGradRef" class="title-line title-gradient" aria-label="Test Mode">Test Mode</span>
-        </h1>
-  
-        <!-- 副标题（词级 flip 出场） -->
-        <p ref="taglineRef" class="tagline">
-          Practice spotting emotions like a pro — pick a vibe, smash the quiz, level up.
-        </p>
-  
-        <!-- 模式卡（保持你的样式与 hover 动画） -->
-        <ul class="mode-stack">
-          <li
-            v-for="m in modes"
-            :key="m.key"
-            class="mode-card"
-            :class="`--${m.key.toLowerCase()}`"
-            role="button"
-            tabindex="0"
-            :data-key="m.key"
-            @click="startTest(m.key)"
-            @mouseenter="handleEnter(m.key)"
-            @mouseleave="handleLeave(m.key)"
-            @focusin="handleEnter(m.key)"
-            @focusout="handleLeave(m.key)"
-          >
-            <span class="aura" aria-hidden="true"></span>
-            <span class="shine-clip" aria-hidden="true"><span class="shine"></span></span>
-  
-            <div class="mode-left"><div class="mode-emoji">{{ m.emoji }}</div></div>
-            <div class="mode-main">
-              <h2 class="mode-title">
-                {{ m.title }} <span class="mode-badge">{{ m.badge }}</span>
-              </h2>
-              <p class="mode-desc">{{ m.desc }}</p>
-              <div class="perks"><span v-for="p in m.perks" :key="p" class="perk">{{ p }}</span></div>
-            </div>
-            <div class="mode-right">
-              <button class="start-btn" @mouseenter.stop="handleEnter(m.key)" @mouseleave.stop="handleLeave(m.key)">Start</button>
-            </div>
-          </li>
-        </ul>
-  
-        <p ref="helperRef" class="helper">Tip: you can choose modes anytime — no pressure, just progress.</p>
-      </div>
-  
-      <!-- ===== Quiz Layer（弹出题卡，不跳转路由） ===== -->
-      <teleport to="body">
-        <div v-if="quiz.playing" class="quiz-layer" ref="layerRef" @click.self="closeQuiz">
-          <!-- 题卡 -->
-          <div ref="cardRef" class="quiz-card fx-tilt" @mousemove="onTilt" @mouseleave="resetTilt">
-            <!-- 顶部：进度环 + meta + 关闭 -->
-            <div class="card-top">
-              <svg class="ring" viewBox="0 0 80 80" aria-hidden="true">
-                <defs>
-                  <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%"  stop-color="#22d3ee"/>
-                    <stop offset="50%" stop-color="#3b82f6"/>
-                    <stop offset="100%" stop-color="#a78bfa"/>
-                  </linearGradient>
-                </defs>
-                <circle class="ring-bg" cx="40" cy="40" r="34"/>
-                <circle class="ring-fg" :style="ringStyle" cx="40" cy="40" r="34" stroke="url(#ringGrad)"/>
-              </svg>
-  
-              <div class="meta">
-                <span class="idx">{{ currentIndex + 1 }} / {{ total }}</span>
-                <span class="sep">•</span>
-                <span class="mode">{{ curModeLabel }}</span>
-                <span class="sep">•</span>
-                <span class="time">{{ elapsedText }}</span>
-              </div>
-  
-              <button class="close-btn" @click="onClose" aria-label="Close">
-                <svg viewBox="0 0 24 24">
-                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </button>
-            </div>
-  
-            <!-- 题干 -->
-            <div ref="qWrap" class="question-wrap" :class="{ expanded: qExpanded }">
-                <p ref="qText" class="question-text">
-                    {{ currentQuestion.question }}
-                </p>
+  <section class="test-hero" ref="modesRef">
+    <!-- Decorative orbit background -->
+    <svg class="orbits" viewBox="0 0 600 600" aria-hidden="true">
+      <defs>
+        <radialGradient id="g" cx="50%" cy="50%">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0.9" />
+          <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="300" cy="300" r="140" fill="url(#g)"/>
+      <circle cx="300" cy="300" r="220" fill="url(#g)"/>
+    </svg>
 
-                <!-- 渐隐遮罩（仅在未展开且内容溢出时显示） -->
-                <i v-if="qOverflow && !qExpanded" class="fade-mask" aria-hidden="true"></i>
+    <div class="container">
+      <!-- Page title with gradient reveal -->
+      <h1 class="title">
+        <span ref="titlePlainRef" class="title-line title-plain">Select Your</span>
+        <span ref="titleGradRef" class="title-line title-gradient" aria-label="Test Mode">Test Mode</span>
+      </h1>
 
-                <!-- 展开/收起按钮 -->
-                <button
-                    v-if="qOverflow"
-                    class="more-btn"
-                    @click="qExpanded ? collapseQ() : expandQ()"
-                >
-                    {{ qExpanded ? 'Show less' : 'Show more' }}
-                </button>
-            </div>
-  
-            <!-- 选项 -->
-            <div class="options">
-              <button
-                v-for="(opt,i) in options"
-                :key="i"
-                class="opt quiz-opt"
-                :disabled="lock"
-                @click="onChoose(opt, $event)"
-                @mousemove="hoverGlow($event)"
-              >
-                <span class="ripple-holder"></span>
-                <span class="dot"></span>
-                <span class="label">{{ opt }}</span>
-              </button>
-            </div>
-  
-            <!-- 背景粒子（正确时爆炸用）-->
-            <svg ref="confettiRef" class="confetti" viewBox="0 0 400 200" aria-hidden="true"></svg>
+      <!-- Tagline words flip-in animation -->
+      <p ref="taglineRef" class="tagline">
+        Practice spotting emotions like a pro — pick a vibe, smash the quiz, level up.
+      </p>
+
+      <!-- Mode cards (click to start) -->
+      <ul class="mode-stack">
+        <li
+          v-for="m in modes"
+          :key="m.key"
+          class="mode-card"
+          :class="`--${m.key.toLowerCase()}`"
+          role="button"
+          tabindex="0"
+          :data-key="m.key"
+          @click="startTest(m.key)"
+          @mouseenter="handleEnter(m.key)"
+          @mouseleave="handleLeave(m.key)"
+          @focusin="handleEnter(m.key)"
+          @focusout="handleLeave(m.key)"
+        >
+          <span class="aura" aria-hidden="true"></span>
+          <span class="shine-clip" aria-hidden="true"><span class="shine"></span></span>
+
+          <div class="mode-left"><div class="mode-emoji">{{ m.emoji }}</div></div>
+          <div class="mode-main">
+            <h2 class="mode-title">
+              {{ m.title }} <span class="mode-badge">{{ m.badge }}</span>
+            </h2>
+            <p class="mode-desc">{{ m.desc }}</p>
+            <div class="perks"><span v-for="p in m.perks" :key="p" class="perk">{{ p }}</span></div>
           </div>
-  
-          <!-- 结果卡 -->
-          <div v-if="quiz.done" class="quiz-result" ref="resultRef">
-            <h3>Great job!</h3>
-            <p class="score"><b>{{ quiz.correct }}</b> / {{ quiz.items.length }} ({{ accuracy }}%)</p>
-            <p class="time">Time: {{ elapsedLabel }}</p>
-            <div class="actions">
-              <button class="btn ghost" @click="restart">Try again</button>
-              <button class="btn" @click="seeTips">See tips</button>
+          <div class="mode-right">
+            <button class="start-btn" @mouseenter.stop="handleEnter(m.key)" @mouseleave.stop="handleLeave(m.key)">Start</button>
+          </div>
+        </li>
+      </ul>
+
+      <p ref="helperRef" class="helper">Tip: you can choose modes anytime — no pressure, just progress.</p>
+    </div>
+
+    <!-- ===== Quiz Layer (teleported overlay, no route change) ===== -->
+    <teleport to="body">
+      <div v-if="quiz.playing" class="quiz-layer" ref="layerRef" @click.self="closeQuiz">
+        <!-- Quiz card -->
+        <div ref="cardRef" class="quiz-card fx-tilt" @mousemove="onTilt" @mouseleave="resetTilt">
+          <!-- Top bar: progress ring + meta + close -->
+          <div class="card-top">
+            <svg class="ring" viewBox="0 0 80 80" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%"  stop-color="#22d3ee"/>
+                  <stop offset="50%" stop-color="#3b82f6"/>
+                  <stop offset="100%" stop-color="#a78bfa"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="40" cy="40" r="34"/>
+              <circle class="ring-fg" :style="ringStyle" cx="40" cy="40" r="34" stroke="url(#ringGrad)"/>
+            </svg>
+
+            <div class="meta">
+              <span class="idx">{{ currentIndex + 1 }} / {{ total }}</span>
+              <span class="sep">•</span>
+              <span class="mode">{{ curModeLabel }}</span>
+              <span class="sep">•</span>
+              <span class="time">{{ elapsedText }}</span>
             </div>
+
+            <button class="close-btn" @click="onClose" aria-label="Close">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Question area (collapsible text with scenario) -->
+          <div ref="qWrap" class="question-wrap" :class="{ expanded: qExpanded }">
+            <!-- Scenario block (animated in) -->
+            <div ref="scenarioTextRef" class="scenario-box" v-if="currentQuestion.scenario">
+              <h4 class="scenario-label">Scenario</h4>
+              <p ref="scenarioTextRef" class="scenario-text">{{ currentQuestion.scenario }}</p>
+            </div>
+
+            <!-- Review text -->
+            <p ref="qText" class="question-text">
+              {{ currentQuestion.question }}
+            </p>
+
+            
+
+            <!-- Fade mask only when collapsed and overflowing -->
+            <i v-if="qOverflow && !qExpanded" class="fade-mask" aria-hidden="true"></i>
+
+            <!-- Expand/collapse button -->
+            <button
+              v-if="qOverflow"
+              class="more-btn"
+              @click="qExpanded ? collapseQ() : expandQ()"
+            >
+              {{ qExpanded ? 'Show less' : 'Show more' }}
+            </button>
+          </div>
+
+          <!-- Hint below review -->
+          <p ref="hintRef" class="question-hint" aria-live="polite">
+            Based on this, <span class="hint-emph">what emotion fits best?</span>
+          </p>
+          <!-- <p class="question-hint">Based on this, what emotion fits best?</p> -->
+
+          <!-- Options (kept OUTSIDE of question-wrap to avoid being clipped) -->
+          <div class="options">
+            <button
+              v-for="(opt,i) in options"
+              :key="i"
+              class="opt quiz-opt"
+              :disabled="lock"
+              @click="onChoose(opt, $event)"
+              @mousemove="hoverGlow($event)"
+            >
+              <span class="ripple-holder"></span>
+              <span class="dot"></span>
+              <span class="label">{{ opt }}</span>
+            </button>
+          </div>
+
+          <!-- Confetti container (fired on correct) -->
+          <svg ref="confettiRef" class="confetti" viewBox="0 0 400 200" aria-hidden="true"></svg>
+        </div>
+
+        <!-- Result card (shown when finished) -->
+        <div v-if="quiz.done" class="quiz-result" ref="resultRef">
+          <h3>Great job!</h3>
+          <p class="score"><b>{{ quiz.correct }}</b> / {{ quiz.items.length }} ({{ accuracy }}%)</p>
+          <p class="time">Time: {{ elapsedLabel }}</p>
+          <div class="actions">
+            <button class="btn ghost" @click="restart">Try again</button>
+            <button class="btn" @click="seeTips">See tips</button>
           </div>
         </div>
-      </teleport>
-      <!-- Feedback Section -->
-        <FeedbackPanel
-        v-if="showFeedback"
-        class="feedback-block"     
-        :data="feedbackData"
-        @retry="restartFromPanel"
-        @backTop="scrollToTopSmooth"
-        />
-    </section>
-  </template>
+      </div>
+    </teleport>
+
+    <!-- Feedback section (appears below the hero) -->
+    <FeedbackPanel
+      v-if="showFeedback"
+      class="feedback-block"
+      :data="feedbackData"
+      @retry="restartFromPanel"
+      @backTop="scrollToTopSmooth"
+    />
+  </section>
+</template>
   
   <script setup>
   import FeedbackPanel from '@/components/FeedbackPanel.vue'
@@ -221,6 +238,8 @@ function scrollToModesFancy () {
   const helperRef     = ref(null)
   const heroRef  = ref(null)
   const modesRef = ref(null)
+  const hintRef = ref(null)
+  const scenarioTextRef = ref(null)
   
   function scrollToModes () {
   const el = modesRef.value
@@ -332,6 +351,7 @@ ScrollTrigger.refresh()
   const layerRef = ref(null)
   const cardRef  = ref(null)
   const resultRef= ref(null)
+  const scenarioRef = ref(null)
   
   const activeMode = ref('Easy')
   const quiz = reactive({
@@ -349,7 +369,8 @@ ScrollTrigger.refresh()
   const activeQ = computed(() => quiz.items[quiz.index] || null)
   const currentQuestion = computed(() => ({
     question: activeQ.value?.question || '',
-    answer:   activeQ.value?.answer   || ''
+    answer:   activeQ.value?.answer   || '',
+    scenario: activeQ.value?.scenario || ''
   }))
   const options = computed(() => activeQ.value?.options || [])
   const currentIndex = computed(() => quiz.index)
@@ -413,6 +434,7 @@ watch(() => quiz.playing, (v) => {
       quiz.items = rows.map(r => ({
         question: r.review,
         answer:   r.type,
+        scenario: r.scenario ?? r.context ?? '',
         options:  buildOptions(r.type),
       }))
       quiz.index = 0
@@ -505,6 +527,34 @@ watch(() => quiz.playing, (v) => {
     if (!cardRef.value) return
     gsap.set(cardRef.value, { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1, boxShadow: '' })
     gsap.from(cardRef.value, { y: 28, opacity: 0, scale: .98, duration: .38, ease: 'power3.out' })
+    
+    if (scenarioRef.value) {
+      gsap.from(scenarioRef.value, {
+        y: 14,
+        opacity: 0,
+        duration: .4,
+        ease: 'power2.out',
+        delay: .05
+      })
+    }
+
+    if (scenarioTextRef.value) {
+      scenarioTextRef.value.textContent = ''
+      gsap.killTweensOf(scenarioTextRef.value) 
+      gsap.to(scenarioTextRef.value, {
+        text: currentQuestion.value.scenario,  
+        duration: 1.0,     
+        ease: 'none',
+        delay: 0.10   
+      })
+    }
+
+    if (hintRef.value) {
+      gsap.from(hintRef.value, {
+        y: 8, opacity: 0, duration: .4, ease: 'power2.out', delay: .12
+      })
+    }
+    
     if (qWrap.value) gsap.from(qWrap.value, { y: 16, opacity: 0, duration: .30, ease: 'power2.out', delay: .05 })
     gsap.from('.quiz-opt', { y: 12, opacity: 0, duration: .28, ease: 'power2.out', stagger: .05, delay: .05 })
     measureQ()
@@ -848,7 +898,12 @@ function restartFromPanel () {
   .wipe-mask{ background: linear-gradient(#000 0 0); -webkit-background-clip: text; color: transparent; }
   
   /* 选项按钮：支持鼠标位置发光 + 点击水波纹 */
-  .options{ display:grid; gap:10px; }
+  .options{ display:grid; 
+            gap:10px;
+            margin-top: 10px;
+            position: relative; 
+            z-index: 1; 
+  }
   .opt{
     position: relative;
     display:flex; align-items:center; gap:10px;
@@ -894,9 +949,10 @@ function restartFromPanel () {
 .question-wrap{
   position: relative;
   margin: 10px 0 16px;
-  max-height: 140px;                 /* 折叠高度与 COLLAPSED_MAX 一致 */
-  overflow: hidden;
+  max-height: 90px;                 
+  /* overflow: hidden; */
   transition: max-height .25s ease;
+  margin-bottom: 100px;
 }
 
 /* 文本本体：强制换行、长词/无空格也能换开 */
@@ -955,6 +1011,90 @@ function restartFromPanel () {
   .feedback-block{
     margin-top: 80px;
   }
+}
+
+/* Scenario */
+.scenario-box {
+  background: #f8fafc;
+  border-left: 4px solid #3b82f6;  /* 蓝色强调 */
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  color: #1c4b9c;
+}
+
+.scenario-label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #3b82f6;
+  margin: 0 0 4px 0;
+  letter-spacing: .5px;
+}
+
+.scenario-text {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1f2937;
+  margin: 0;
+}
+
+/* question hint */
+.question-hint {
+  margin: 12px 0 14px;
+  font-size: clamp(16px, 1.9vw, 18px);
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: .2px;
+  font-style: italic;
+  text-shadow: 0 1px 12px rgba(59,130,246,.12);
+}
+
+.question-hint .hint-emph{
+  /* 渐变文本（随时间流动） */
+  background: linear-gradient(90deg, #22d3ee, #3b82f6, #a78bfa, #f472b6, #22d3ee);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 900;
+  /* 让“what emotion fits best?”更大一点 */
+  font-size: 1.05em;
+  position: relative;
+  /* 平滑动画 */
+  animation: hintGradient 6s linear infinite;
+}
+
+.question-hint .hint-emph::after{
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -3px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(34,211,238,.0), rgba(34,211,238,.6), rgba(59,130,246,.7), rgba(167,139,250,.7), rgba(244,114,182,.6), rgba(34,211,238,.0));
+  background-size: 200% 100%;
+  filter: blur(0.3px);
+  animation: hintUnderline 2.8s ease-in-out infinite;
+}
+
+@keyframes hintGradient{
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+/* 下划线左右轻微流动 + 呼吸亮度 */
+@keyframes hintUnderline{
+  0%   { background-position:   0% 50%; opacity: .85; }
+  50%  { background-position: 100% 50%; opacity: 1;   }
+  100% { background-position:   0% 50%; opacity: .85; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .question-hint .hint-emph{ animation: none; }
+  .question-hint .hint-emph::after{ animation: none; }
 }
 
 

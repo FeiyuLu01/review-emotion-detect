@@ -51,7 +51,7 @@
 // src/api/http.js
 import axios from 'axios'
 import { message } from 'ant-design-vue'
-import { API_BASE } from '@/utils/apiBase'   // ★ 新增
+import { API_BASE, Test_API_BASE } from '@/utils/apiBase'   // ★ 新增
 
 function setupInterceptors(instance) {
   instance.interceptors.request.use(
@@ -86,7 +86,7 @@ const http = setupInterceptors(
 
 const testHttp = setupInterceptors(
   axios.create({
-    baseURL: API_BASE,   // 若需要独立 TEST_BASE，可按同样方式扩展
+    baseURL: Test_API_BASE,   // 若需要独立 TEST_BASE，可按同样方式扩展
     timeout: 15000,
   })
 )

@@ -12,4 +12,7 @@ export const ANALYSIS_BASE =
 export const REWRITE_BASE =
   isLocal ? stripSlash(import.meta.env.VITE_REWRITE_API_URL) : '/api';
 
+export const Test_API_BASE =
+  isLocal ? stripSlash(import.meta.env.VITE_Test_API_BASE) : '/api';
+
 export { isLocal };
