@@ -194,14 +194,14 @@ import { TextPlugin } from 'gsap/TextPlugin'
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, TextPlugin)
 
-  /* ====== 新增：Hero → Modes 的炫酷滚动过渡 ====== */
+  /* ====== add：Hero → Modes Rolling Transition ====== */
 const modesStart = ref(null)
 function scrollToModesFancy () {
   const el = modesStart.value
   if (!el) return
   const top = el.getBoundingClientRect().top + window.scrollY - 8
 
-  // 创建一次性的彩色扫光叠层
+  // Create a one-time color sweep overlay
   const overlay = document.createElement('div')
   overlay.className = 'sweep-overlay'
   document.body.appendChild(overlay)
@@ -211,9 +211,9 @@ function scrollToModesFancy () {
   })
 
   tl.set(overlay, { opacity: 0 })
-    // 扫光显现
+    // Sweep to reveal
     .to(overlay, { opacity: 1, duration: .2, ease: 'power2.in' })
-    // 滚动同时扫光推进
+    // Rolling while sweeping forward
     .to([overlay], {
       '--x': '110%',
       duration: 1.1,
@@ -224,14 +224,14 @@ function scrollToModesFancy () {
       duration: 1.1,
       ease: 'power3.inOut'
     }, 0)
-    // 模式卡炫酷登场
+    // mode card
     .from('.mode-card', {
       y: 28, opacity: 0, rotateX: -10, transformOrigin: '50% 100%',
       duration: .5, stagger: .08, ease: 'back.out(1.6)'
     }, '-=0.25')
 }
   
-  /* ---------------- 标题/副标题动画（与你一致） ---------------- */
+  /* ---------------- Title/Subtitle Animation ---------------- */
   const titlePlainRef = ref(null)
   const titleGradRef  = ref(null)
   const taglineRef    = ref(null)
@@ -299,7 +299,7 @@ if (heroEl) {
 ScrollTrigger.refresh()
   })
   
-  /* ---------------- 模式卡 + hover 动画（与你一致） ---------------- */
+  /* ---------------- mode card + hover animation ---------------- */
   const modes = [
     { key: 'Easy',     emoji: '⚡', title: 'Quick Mode',     badge: 'Warm-up',
       desc: 'Fast, friendly, and zero stress — perfect for a quick try.',
@@ -347,7 +347,7 @@ ScrollTrigger.refresh()
     else fadeAll()
   }
   
-  /* ---------------- Quiz 叠层：核心逻辑 ---------------- */
+  /* ---------------- Quiz layer ---------------- */
   const layerRef = ref(null)
   const cardRef  = ref(null)
   const resultRef= ref(null)
@@ -365,7 +365,7 @@ ScrollTrigger.refresh()
     endAt:   0,  
   })
   
-  /* 派生状态与显示 */
+  
   const activeQ = computed(() => quiz.items[quiz.index] || null)
   const currentQuestion = computed(() => ({
     question: activeQ.value?.question || '',
@@ -378,7 +378,7 @@ ScrollTrigger.refresh()
   const lock = computed(() => quiz.locked)
   const accuracy = computed(() => quiz.items.length ? Math.round((quiz.correct / quiz.items.length) * 100) : 0)
   
-  /* 计时器 */
+  /* timer */
   const elapsedText = ref('0:00')
   const timer = ref(null)
 
@@ -392,7 +392,7 @@ ScrollTrigger.refresh()
 
 watch(() => quiz.playing, (v) => {
   clearInterval(timer.value)
-  if (v && !quiz.done) {             // ✅ 只有进行中时才跑表
+  if (v && !quiz.done) {             
     timer.value = setInterval(() => {
       const s = Math.max(0, Math.floor((Date.now() - (quiz.startAt||Date.now()))/1000))
       const m = Math.floor(s/60), r = s%60
@@ -404,11 +404,11 @@ watch(() => quiz.playing, (v) => {
   const elapsedLabel = computed(() => elapsedText.value)
   const curModeLabel = computed(() => activeMode.value)
   
-  /* 进度环样式（SVG） */
+  /* process circle（SVG） */
   const R = 34
   const C = 2 * Math.PI * R
   const ringStyle = computed(() => {
-    const ratio = total.value ? (currentIndex.value) / total.value : 0  // 当前题开始前的完成占比
+    const ratio = total.value ? (currentIndex.value) / total.value : 0  
     return {
       strokeDasharray: `${C}px`,
       strokeDashoffset: `${(1 - ratio) * C}px`,
@@ -417,7 +417,7 @@ watch(() => quiz.playing, (v) => {
     }
   })
   
-  /** 入口：点击模式卡拉取试题并弹出叠层 */
+  /** Entry: Click the pattern card to retrieve questions and pop up the layered display. */
   async function startTest(mode){
     activeMode.value = mode
     try{
@@ -459,7 +459,7 @@ watch(() => quiz.playing, (v) => {
     return a
   }
   
-  /** 点击选项（带水波 & 高亮） */
+  /** click options */
   function onChoose(opt, ev){
     // ripple
     const holder = ev.currentTarget.querySelector('.ripple-holder')
@@ -476,14 +476,13 @@ watch(() => quiz.playing, (v) => {
     choose(opt)
   }
   
-  /** 选择答案：动画后进入下一题 */
+  /** select answer：go to next question after animation */
   async function choose(opt){
     if (quiz.locked) return
     quiz.locked = true
   
     const isCorrect = opt === currentQuestion.value.answer
   
-    // 按钮轻微反馈
     const btn = Array.from(document.querySelectorAll('.quiz-opt')).find(b => b.textContent.trim() === opt)
     if (btn) gsap.fromTo(btn, {scale:1}, {scale:1.04, duration:.12, yoyo:true, repeat:1, ease:'power2.out'})
   
@@ -496,13 +495,13 @@ watch(() => quiz.playing, (v) => {
     await nextQuestion()
   }
   
-  /** 下一题或结束 */
+  /** next question or end */
   async function nextQuestion(){
     if (quiz.index < quiz.items.length - 1){
       quiz.index++
       await nextTick()
   
-      // 复位上次动画残留
+      // restore the animation of last question
       if (cardRef.value) gsap.set(cardRef.value, { clearProps: 'all', opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 })
       if (qWrap.value)   gsap.set(qWrap.value,   { clearProps: 'all' })
       gsap.set('.quiz-opt',   { clearProps: 'all' })
@@ -516,7 +515,7 @@ watch(() => quiz.playing, (v) => {
     }
   }
   
-  /* ---------------- GSAP 动画片段 ---------------- */
+  /* ---------------- GSAP animation ---------------- */
   function openLayerAnim(){
     if (!layerRef.value || !cardRef.value) return
     const tl = gsap.timeline()
@@ -585,7 +584,7 @@ watch(() => quiz.playing, (v) => {
       .fromTo(resultRef.value, {scale:.9, y:20, opacity:0}, {scale:1, y:0, opacity:1, duration:.5, ease:'back.out(1.6)'})
   }
   
-  /** 关闭/重开 */
+  /** close/reopen */
   function onClose(){ closeQuiz() }
   function closeQuiz(){
     const target = resultRef.value || cardRef.value
@@ -613,7 +612,7 @@ watch(() => quiz.playing, (v) => {
     enterCardAnim()
   }
   
-  /** 简单彩带粒子 */
+  /** success animation */
   function confetti(host){
     const N = 20
     for (let i=0;i<N;i++){
@@ -640,7 +639,7 @@ watch(() => quiz.playing, (v) => {
     }
   }
   
-  /* ----------- 视觉增强：选项 hover 发光 + 卡片 3D Tilt ----------- */
+  /* ----------- Visual Enhancements: Options: Hover Glow + Card 3D Tilt ----------- */
   function hoverGlow(e){
     const btn = e.currentTarget
     const rect = btn.getBoundingClientRect()
@@ -663,23 +662,23 @@ watch(() => quiz.playing, (v) => {
     gsap.to(cardRef.value, { rotateX:0, rotateY:0, duration:.3, ease:'power2.out' })
   }
 
-  // ===== 题干溢出控制 =====
+  // ===== Title Bar Overflow Control =====
 const qWrap = ref(null)
 const qText = ref(null)
-const qExpanded = ref(false)    // 是否展开全文
-const qOverflow = ref(false)    // 是否存在溢出（需展示“Show more”）
+const qExpanded = ref(false)    
+const qOverflow = ref(false)    
 
-const COLLAPSED_MAX = 140       // 折叠时最大高度（px）
+const COLLAPSED_MAX = 140       
 
 function measureQ() {
-  // 在下一帧测量，保证 DOM 完整渲染
+  
   requestAnimationFrame(() => {
     if (!qWrap.value || !qText.value) return
-    // 先回到折叠状态测量
+    
     qExpanded.value = false
     qWrap.value.style.maxHeight = COLLAPSED_MAX + 'px'
     qWrap.value.style.removeProperty('height')
-    // 判断是否溢出
+    
     qOverflow.value = qText.value.scrollHeight > COLLAPSED_MAX + 2
   })
 }

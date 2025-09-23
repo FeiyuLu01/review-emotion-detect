@@ -1,6 +1,6 @@
 <template>
     <section id="feedback" class="tips-wrap" ref="wrapRef">
-      <!-- Header（跨两列） -->
+      <!-- Header（2 cols） -->
       <header class="tips-head" ref="headRef">
         <h2 class="title">
           <span class="grad">Personalized Tips</span>
@@ -8,7 +8,7 @@
         </h2>
       </header>
   
-      <!-- 左侧轨迹 + 小球 -->
+      <!-- left rail -->
       <aside class="rail">
         <svg class="rail-svg" viewBox="0 0 80 560" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <path
@@ -20,7 +20,7 @@
         <div class="rail-dot" ref="railDot"></div>
       </aside>
   
-      <!-- 顶部“等级 + 插画”卡片 -->
+      <!-- top “level + illu” card -->
       <div class="card">
         <div class="level-row">
           <div class="level-left two-lines">
@@ -44,7 +44,7 @@
         </div>
       </div>
   
-      <!-- 三块独立卡片 -->
+      <!-- 3 cards -->
       <section class="card-section" data-st="1" :class="{ 'stage-locked': revealIndex < 1 }">
         <h4 class="st-title">OVERALL FEEDBACK</h4>
         <p class="overall st-copy">{{ data.feedback || '—' }}</p>
@@ -62,7 +62,7 @@
         <p class="overall st-copy">{{ levelInfo.advice }}</p>
       </section>
   
-      <!-- Resources 放在独立卡片 -->
+      <!-- Resources -->
       <section class="card-section" data-st="4">
         <section class="row grid-1 resources-card" ref="resourcesRef">
           <div>
@@ -74,7 +74,7 @@
         </section>
       </section>
   
-      <!-- ✅ 抽离出来的按钮：位于资源卡片下方，保持居中与间距 -->
+    
       <div class="actions actions-out">
         <button class="btn ghost" @click="handleRetry">Try again</button>
         <button class="btn" @click="emit('backTop')">Back to top</button>
@@ -89,7 +89,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 
-/* 事件定义 */
+/* event identified */
 const emit = defineEmits(['retry','backTop'])
 
 const props = defineProps({
@@ -159,9 +159,9 @@ function updateRailSize() {
   ScrollTrigger.refresh()
 }
 
-/* GSAP 初始化（保持你上个版本动画，并不改按钮） */
+/* GSAP init */
 function initGsap() {
-  // 顶部大卡内部：chip -> 句子 -> 插画
+  // inside top card：chip -> sequence -> illu
   const banner = document.querySelector('.card')
   if (banner) {
     const tl = gsap.timeline({ scrollTrigger: { trigger: banner, start: 'top 75%' } })
@@ -170,7 +170,7 @@ function initGsap() {
       .from(banner.querySelector('.level-illustration'), { x: 18, opacity: 0, duration: .5, ease: 'power2.out' }, '-=0.2')
   }
 
-  // 标题词级弹入
+  // tile word inside
   document.querySelectorAll('.card-section .st-title').forEach(title => {
     const words = title.textContent.trim().split(/\s+/)
     title.innerHTML = words.map(w => `<span class="w">${w}&nbsp;</span>`).join('')
@@ -184,7 +184,7 @@ function initGsap() {
     })
   })
 
-  // 标题渐变下划线（.st-title & .res-title）
+  // title underline（.st-title & .res-title）
   document.querySelectorAll('.st-title, .res-title').forEach(el => {
     gsap.fromTo(el, { '--title-underline': 0 }, {
       '--title-underline': 1,
@@ -194,7 +194,7 @@ function initGsap() {
     })
   })
 
-  // 小卡正文淡入
+  
   gsap.utils.toArray('.card-section .st-copy').forEach(el => {
     gsap.from(el, {
       y: 24, opacity: 0,
@@ -203,7 +203,7 @@ function initGsap() {
     })
   })
 
-  // QUICK TIPS 的 chip 逐条进入
+  // QUICK TIPS
   const chipsWrap = document.querySelector('.card-section[data-st="2"] .chips')
   if (chipsWrap) {
     const chipEls = chipsWrap.querySelectorAll('.chip')
