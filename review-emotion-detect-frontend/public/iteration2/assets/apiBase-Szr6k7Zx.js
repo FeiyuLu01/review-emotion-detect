@@ -1,1 +1,0 @@
-const a=["localhost","127.0.0.1"].includes(location.hostname),s=t=>(t||"").replace(/\/+$/,""),o=a?s("/api"):"/api",c=a?s("https://backend.luosong.wang"):"/api",n=a?s("/api"):"/api",p=a?s("http://3.27.11.77:8080"):"/api";export{o as A,n as R,p as T,c as a};
