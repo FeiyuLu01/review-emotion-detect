@@ -25,7 +25,7 @@ public class DashboardController {
      * @param timePeriod the time period for analysis (weekly, monthly, yearly)
      * @return response containing keyword statistics sorted by count
      */
-    @GetMapping("/keyword-stats")
+    @GetMapping("/sort-emotion")
     public ResponseVo<KeywordStatsResponse> getKeywordStats(
             @RequestParam("timePeriod") 
             @Pattern(regexp = "^(weekly|monthly|yearly)$", message = "Time period must be one of: weekly, monthly, yearly")
@@ -45,7 +45,7 @@ public class DashboardController {
      * Returns all sentiment data for trend analysis
      * @return response containing sentiment chart data formatted for ECharts
      */
-    @GetMapping("/sentiment-chart")
+    @GetMapping("/line-chart")
     public ResponseVo<SentimentChartResponse> getSentimentChartData() {
         try {
             SentimentChartResponse response = dashboardService.getSentimentChartData();
