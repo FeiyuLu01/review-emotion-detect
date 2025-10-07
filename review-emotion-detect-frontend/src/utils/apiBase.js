@@ -15,4 +15,7 @@ export const REWRITE_BASE =
 export const Test_API_BASE =
   isLocal ? stripSlash(import.meta.env.VITE_Test_API_BASE) : '/api';
 
+export const SHARE_REVIEW_API_BASE =
+  isLocal ? stripSlash(import.meta.env.VITE_SHARE_REVIEW_API) : '/api';
+
 export { isLocal };

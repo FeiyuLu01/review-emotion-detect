@@ -38,6 +38,15 @@
       </a>
 
       <a 
+        href="/share" 
+        class="nav-link" 
+        :class="{ active: selectedKey === '/share' }"
+        @click.prevent="onMenuClick('/share')"
+      >
+        EmotionSquare
+      </a>
+
+      <a 
         href="/about" 
         class="nav-link" 
         :class="{ active: selectedKey === '/about' }"
@@ -61,6 +70,7 @@ const selectedKey = computed(() => {
   if (p.startsWith('/analyze')) return '/analyze'
   if (p.startsWith('/about')) return '/about'
   if (p.startsWith('/test')) return '/test'
+  if (p.startsWith('/share')) return '/share' 
   return '/home'
 })
 

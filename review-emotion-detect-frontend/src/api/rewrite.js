@@ -1,6 +1,6 @@
 export async function rewriteReview(text, tone = 'neutral', signal) {
     const base = (import.meta.env.VITE_REWRITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
-    const resp = await fetch(`${base}/rewrite`, {
+    const resp = await fetch(`${base}/gemini-rewrite `, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, tone }),

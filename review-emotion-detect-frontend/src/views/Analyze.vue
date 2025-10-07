@@ -270,7 +270,7 @@ const prethinkMsg = 'Encourages all users to critically reflect before analyzing
 // const BACKEND_ANALYSIS_ENDPOINT = `${import.meta.env.VITE_ANALYSIS_API}/emotion_analysis`
 const BACKEND_ANALYSIS_ENDPOINT = `${ANALYSIS_BASE}/emotion_analysis`
 // const API_BASE = (import.meta.env.VITE_API_BASE || 'https://api.luosong.wang').replace(/\/+$/, '')
-const CLASSIFY_URL = `${API_BASE}/classify`
+const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 // const REWRITE_API_BASE = (import.meta.env.VITE_REWRITE_API_URL || API_BASE).replace(/\/+$/, '')
 
 /*  8000 */
@@ -456,12 +456,14 @@ async function analyze(options = {}) {
   // }
 
   try {
+    console.log('CLASSIFY_URL: ', CLASSIFY_URL);
+    
     const resp = await fetch(CLASSIFY_URL, {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
      body: JSON.stringify({ text: text.value }),
    })
-    if (!resp.ok) throw new Error('HF API error: ' + resp.status)
+    if (!resp.ok) throw new Error('CLASSIFY_URL error: ' + resp.status)
     // const data = await resp.json()
     const data = await resp.json()
     // const list = Array.isArray(data?.[0]) ? data[0] : Array.isArray(data) ? data : []
@@ -825,7 +827,7 @@ async function doRewrite() {
   if (!src) return
   rewriteLoading.value = true
   try {
-    const resp = await fetch(`${REWRITE_BASE}/rewrite`, {
+    const resp = await fetch(`${REWRITE_BASE}/gemini-rewrite `, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: src, tone: rewriteTone.value })

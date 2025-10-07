@@ -11,6 +11,7 @@
     "build": "npm run build:all",
     "build:root": "vite build --base=/ --outDir=dist",
     "build:iter1": "bash scripts/build-iter1-from-tag.sh",
+    "build:iter2": "vite build --base=/iteration2/ --outDir=dist",
     "build:all": "npm run build:root && npm run build:iter1",
     "preview": "vite preview",
     "lint": "eslint . --fix",
@@ -24,6 +25,7 @@
     "pinia": "^3.0.3",
     "split-type": "^0.3.4",
     "vue": "^3.5.18",
+    "vue-color-kit": "^1.0.6",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {

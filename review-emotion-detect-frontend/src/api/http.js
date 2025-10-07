@@ -51,7 +51,7 @@
 // src/api/http.js
 import axios from 'axios'
 import { message } from 'ant-design-vue'
-import { API_BASE, Test_API_BASE } from '@/utils/apiBase'   // ★ 新增
+import { API_BASE, Test_API_BASE, SHARE_REVIEW_API_BASE } from '@/utils/apiBase'  
 
 function setupInterceptors(instance) {
   instance.interceptors.request.use(
@@ -79,17 +79,24 @@ function setupInterceptors(instance) {
 
 const http = setupInterceptors(
   axios.create({
-    baseURL: API_BASE,   // 本地=绝对地址；线上=/api
+    baseURL: API_BASE,   
     timeout: 15000,
   })
 )
 
 const testHttp = setupInterceptors(
   axios.create({
-    baseURL: Test_API_BASE,   // 若需要独立 TEST_BASE，可按同样方式扩展
+    baseURL: Test_API_BASE,   
     timeout: 15000,
   })
 )
 
-export { http, testHttp }
+const sharehttp = setupInterceptors(
+  axios.create({
+    baseURL: SHARE_REVIEW_API_BASE,   
+    timeout: 15000,
+  })
+)
+
+export { http, testHttp, sharehttp }
 export default http

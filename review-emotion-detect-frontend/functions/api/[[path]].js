@@ -67,8 +67,8 @@ export async function onRequest(context) {
 
   // 1) 模型 API → api.luosong.wang
   const hitAPI =
-    path.startsWith('/api/classify') ||
-    path.startsWith('/api/rewrite');
+    path.startsWith('/api/gemini-classify') ||
+    path.startsWith('/api/gemini-rewrite');
 
   // 2) 业务后端 → backend.luosong.wang
   const hitCore =

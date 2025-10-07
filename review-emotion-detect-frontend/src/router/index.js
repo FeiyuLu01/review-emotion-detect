@@ -41,6 +41,12 @@ const routes = [
     component: () => import('@/views/About.vue'),
   },
   {
+    path: '/share',
+    name: 'Share',
+    meta: { title: 'Share Thoughts - ToneLens' },
+    component: () => import('@/views/Share.vue'),
+  },
+  {
     path: '/test',
     name: 'Test',
     meta: { title: 'Test - ToneLens' },
