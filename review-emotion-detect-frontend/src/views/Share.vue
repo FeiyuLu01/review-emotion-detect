@@ -286,7 +286,7 @@ const submitThought = async () => {
 
   try {
     // 🧠 Step 1: Content moderation before posting
-    const moderationRes = await fetch('/api/moderate', {
+    const moderationRes = await fetch('/i3/api/moderate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: thought.value })

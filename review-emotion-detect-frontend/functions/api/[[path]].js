@@ -76,7 +76,7 @@ export async function onRequest(context) {
     path.startsWith('/api/emotion_analysis') ||        // 旧写法兜底
     path.startsWith('/api/posts') ||
     path.startsWith('/api/dashboard') ||
-    path.startsWith('/api/moderate') ||
+    path.startsWith('/i3/api/moderate') ||
     path.startsWith('/api/v3') ||                      // /v3/api-docs 等
     path.startsWith('/api/swagger') ||                 // 如有
     path.startsWith('/api/docs');                      // 如有
