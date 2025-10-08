@@ -74,6 +74,7 @@ export async function onRequest(context) {
   const hitCore =
     path.startsWith('/api/emotion') ||                 // /emotion/...（含 /emotion/questionnaire 等）
     path.startsWith('/api/emotion_analysis') ||        // 旧写法兜底
+    path.startsWith('/api/posts') ||
     path.startsWith('/api/v3') ||                      // /v3/api-docs 等
     path.startsWith('/api/swagger') ||                 // 如有
     path.startsWith('/api/docs');                      // 如有
