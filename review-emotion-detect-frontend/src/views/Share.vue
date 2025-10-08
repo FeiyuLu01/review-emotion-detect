@@ -268,15 +268,6 @@ const isDisabled = computed(() => {
   return !thought.value.trim() || !selectedColor.value
 })
 
-watch(thought, (val) => {
-  console.log('thought changed:', val)
-})
-watch(selectedColor, (val) => {
-  console.log('selectedColor changed:', val)
-})
-watch(isDisabled, (val) => {
-  console.log('isDisabled changed:', val)
-})
 
 const submitThought = async () => {
   if (!thought.value.trim() || !selectedColor.value) {
@@ -292,6 +283,8 @@ const submitThought = async () => {
       body: JSON.stringify({ content: thought.value })
     })
     const moderationData = await moderationRes.json()
+    console.log('moderationData: ', moderationData);
+    
 
     // ❌ If content is not allowed, stop here
     if (!moderationData.allowed) {
