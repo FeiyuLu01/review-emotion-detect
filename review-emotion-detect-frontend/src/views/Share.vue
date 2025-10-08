@@ -672,11 +672,20 @@ function hexToRgb(hex) {
 } */
 
 /* experimental method */
-.wall-grid {
+/* .wall-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: masonry;
   gap: 1.8rem;
+} */
+ .wall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.8rem;
+  position: relative;
+  z-index: 2;
+  margin-top: 12px;
+  clear: both; /* 👈 prevent overlapping with previous floating elements */
 }
 
 @media (max-width: 1024px) {
@@ -803,11 +812,23 @@ function hexToRgb(hex) {
 .group-title {
   font-size: 1.4rem;
   font-weight: 600;
-  margin: 40px 0 16px;
+  margin: 60px 0 20px;
   color: #fdfdfd;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 10;
+  background: rgba(30, 41, 59, 0.7); 
+  backdrop-filter: blur(4px);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+
+/* Each group section should form an isolated stacking context */
+.wall-section > div {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 60px;
 }
 
 .load-more {
