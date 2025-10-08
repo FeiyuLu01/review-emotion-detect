@@ -1,3 +1,4 @@
+console.log("=== Worker onRequest invoked for URL:", request.url)
 export async function onRequest(context) {
   const { request, env } = context
   const url = new URL(request.url)
@@ -11,7 +12,7 @@ export async function onRequest(context) {
   }
 
   // Only proxy paths under /api/ 
-  if (!pathname.startsWith('/api/')) {
+  if (!pathname.startsWith('/api/') && !pathname.startsWith('/i3/api/')) {
     console.log("Not /api/, next()", pathname)
     return context.next()
   }
