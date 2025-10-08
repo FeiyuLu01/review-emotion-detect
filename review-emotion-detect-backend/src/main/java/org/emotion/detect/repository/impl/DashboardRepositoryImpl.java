@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -112,5 +113,24 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                           " positive: +" + positive + " negative: +" + negative + " neutral: +" + neutral);
         
         jdbcTemplate.update(sql, positive, negative, neutral, date);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTwitterSentimentChartData() {
+        String sql = "SELECT DATE(publishedat) as date, " +
+                    "SUM(CASE WHEN sentiment = 'Positive' THEN 1 ELSE 0 END) as positive, " +
+                    "SUM(CASE WHEN sentiment = 'Negative' THEN 1 ELSE 0 END) as negative, " +
+                    "SUM(CASE WHEN sentiment = 'Neutral' THEN 1 ELSE 0 END) as neutral " +
+                    "FROM twitter_comments_time " +
+                    "WHERE countrycode = 'AU' " +
+                    "GROUP BY DATE(publishedat) " +
+                    "ORDER BY DATE(publishedat) ASC";
+        
+        System.out.println("Executing twitter sentiment chart SQL (AU only): " + sql);
+        
+        List<Map<String, Object>> result = jdbcTemplate.queryForList(sql);
+        System.out.println("Twitter sentiment chart query result size (AU): " + result.size());
+        
+        return result;
     }
 }

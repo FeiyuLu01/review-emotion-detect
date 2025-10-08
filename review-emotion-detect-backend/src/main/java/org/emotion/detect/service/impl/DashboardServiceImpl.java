@@ -79,6 +79,37 @@ public class DashboardServiceImpl implements DashboardService {
         
         return new SentimentChartResponse(dates, negative, positive, neutral);
     }
+
+    @Override
+    public SentimentChartResponse getTwitterSentimentChartData() {
+        System.out.println("Getting twitter sentiment chart data for trend analysis");
+        
+        // Get all twitter sentiment chart data from repository
+        List<Map<String, Object>> sentimentData = dashboardRepository.getTwitterSentimentChartData();
+        
+        // Format data for ECharts
+        List<String> dates = new ArrayList<>();
+        List<Integer> positive = new ArrayList<>();
+        List<Integer> negative = new ArrayList<>();
+        List<Integer> neutral = new ArrayList<>();
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M.d");
+        
+        for (Map<String, Object> data : sentimentData) {
+            // Format date for ECharts (e.g., "9.10", "9.11")
+            java.sql.Date sqlDate = (java.sql.Date) data.get("date");
+            LocalDateTime dateTime = sqlDate.toLocalDate().atStartOfDay();
+            String formattedDate = dateTime.format(formatter);
+            dates.add(formattedDate);
+            
+            // Get sentiment counts
+            positive.add(((Number) data.get("positive")).intValue());
+            negative.add(((Number) data.get("negative")).intValue());
+            neutral.add(((Number) data.get("neutral")).intValue());
+        }
+        
+        return new SentimentChartResponse(dates, negative, positive, neutral);
+    }
     
     @Override
     public boolean processEmotion(String emotion) {

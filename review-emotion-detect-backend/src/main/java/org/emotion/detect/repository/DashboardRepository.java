@@ -63,4 +63,10 @@ public interface DashboardRepository {
      * @param neutral neutral count increment
      */
     void updateSentimentCounts(java.sql.Date date, int positive, int negative, int neutral);
+    
+    /**
+     * Get daily sentiment statistics from twitter_comments_time table
+     * @return list of sentiment data grouped by date
+     */
+    List<Map<String, Object>> getTwitterSentimentChartData();
 }

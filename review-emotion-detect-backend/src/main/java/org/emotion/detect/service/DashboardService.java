@@ -29,4 +29,11 @@ public interface DashboardService {
      * @return true if processing was successful
      */
     boolean processEmotion(String emotion);
+    
+    /**
+     * Get twitter sentiment chart data for ECharts visualization
+     * Returns daily sentiment data from twitter_comments_time table
+     * @return sentiment chart response with date and sentiment counts
+     */
+    SentimentChartResponse getTwitterSentimentChartData();
 }

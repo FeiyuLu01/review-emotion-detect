@@ -75,4 +75,19 @@ public class DashboardController {
             return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Error processing emotion: " + e.getMessage());
         }
     }
+
+    /**
+     * Get twitter sentiment chart data for ECharts visualization
+     * Returns daily sentiment data from twitter_comments_time table
+     * @return response containing twitter sentiment chart data formatted for ECharts
+     */
+    @GetMapping("/twitter-line-chart")
+    public ResponseVo<SentimentChartResponse> getTwitterSentimentChartData() {
+        try {
+            SentimentChartResponse response = dashboardService.getTwitterSentimentChartData();
+            return ResponseVo.success(response);
+        } catch (Exception e) {
+            return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Error getting twitter sentiment chart data: " + e.getMessage());
+        }
+    }
 }
