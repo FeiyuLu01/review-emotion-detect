@@ -73,23 +73,36 @@
 
     <!-- ===== Reflection Wall ===== -->
     <div class="wall-section" ref="wallRef">
-      <h2 class="wall-title">Reflection Wall 🪞</h2>
-      <transition-group name="fade" tag="div" class="wall-grid">
-        <div
-          v-for="(post, index) in reflections"
-          :key="index"
-          class="wall-item"
-          :style="{ background: post.color }"
-        >
-          <p class="post-content">{{ post.text }}</p>
-          <p class="post-author">
-            {{ post.anonymous ? 'Anonymous' : 'You' }}
-          </p>
-          <p class="post-date">
-            🕓 {{ formatDate(post.createdAt) }}
-          </p>
+        <h2 class="wall-title">Reflection Wall 🪞</h2>
+
+        <div v-for="(posts, group) in displayedGroups" :key="group">
+            <h3 v-if="posts.length" class="group-title">
+            {{ getGroupTitle(group) }}
+            </h3>
+
+            <transition-group name="fade" tag="div" class="wall-grid">
+            <div
+                v-for="(post, index) in posts"
+                :key="index"
+                class="wall-item"
+                :style="{ background: post.color }"
+            >
+                <p class="post-content">{{ post.text }}</p>
+                <p class="post-author">
+                {{ post.anonymous ? 'Anonymous' : 'You' }}
+                </p>
+                <p class="post-date">
+                🕓 {{ formatDate(post.createdAt) }}
+                </p>
+            </div>
+            </transition-group>
         </div>
-      </transition-group>
+        <!-- 🔽 Load More Button -->
+        <div v-if="!allGroupsVisible" class="load-more">
+            <a-button @click="loadMoreGroups" class="load-more-btn">
+                Load more reflections
+            </a-button>
+        </div>
     </div>
   </section>
 </template>
@@ -286,6 +299,91 @@ function formatDate(dateString) {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  })
+}
+
+function groupReflectionsByDate(reflections) {
+  const today = new Date()
+  const oneDay = 24 * 60 * 60 * 1000
+  const startOfToday = new Date(today.setHours(0, 0, 0, 0))
+  const startOfYesterday = new Date(startOfToday - oneDay)
+  const startOfWeek = new Date(startOfToday - 7 * oneDay)
+  const startOfLastWeek = new Date(startOfToday - 14 * oneDay)
+
+  const groups = {
+    today: [],
+    yesterday: [],
+    thisWeek: [],
+    lastWeek: [],
+    older: [],
+  }
+
+  reflections.forEach(post => {
+    const created = new Date(post.createdAt)
+    if (created >= startOfToday) groups.today.push(post)
+    else if (created >= startOfYesterday) groups.yesterday.push(post)
+    else if (created >= startOfWeek) groups.thisWeek.push(post)
+    else if (created >= startOfLastWeek) groups.lastWeek.push(post)
+    else groups.older.push(post)
+  })
+
+  return groups
+}
+
+const groupedReflections = computed(() => groupReflectionsByDate(reflections.value))
+
+function getGroupTitle(groupKey) {
+  switch (groupKey) {
+    case 'today':
+      return '🗓 Today'
+    case 'yesterday':
+      return '🕓 Yesterday'
+    case 'thisWeek':
+      return '📅 Earlier this week'
+    case 'lastWeek':
+      return '🧭 Last week'
+    default:
+      return '🗃 Older'
+  }
+}
+
+// ===== Lazy Load by Time Groups =====
+
+// Define which groups are visible initially
+const visibleGroups = ref(['today', 'yesterday'])
+
+// Define the order of all time groups
+const allGroupsOrder = ['today', 'yesterday', 'thisWeek', 'lastWeek', 'older']
+
+// Compute which groups should be displayed
+const displayedGroups = computed(() => {
+  const subset = {}
+  visibleGroups.value.forEach(group => {
+    subset[group] = groupedReflections.value[group]
+  })
+  return subset
+})
+
+// Check if all groups are already visible
+const allGroupsVisible = computed(() => visibleGroups.value.length >= allGroupsOrder.length)
+
+// Function to load more groups when user clicks the button
+function loadMoreGroups() {
+  // Find next hidden group and make it visible
+  const remaining = allGroupsOrder.filter(g => !visibleGroups.value.includes(g))
+  const nextGroup = remaining.shift()
+  if (nextGroup) visibleGroups.value.push(nextGroup)
+
+  // Animate the new section when it appears
+  nextTick(() => {
+    const newSection = wallRef.value.querySelector('.group-title:last-of-type')
+    if (newSection) {
+      gsap.fromTo(
+        newSection,
+        { x: -40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }
+      )
+    }
   })
 }
 </script>
@@ -531,5 +629,37 @@ function formatDate(dateString) {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.group-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 40px 0 16px;
+  color: #fdfdfd;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+}
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.load-more-btn {
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+.load-more-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
 }
 </style>
