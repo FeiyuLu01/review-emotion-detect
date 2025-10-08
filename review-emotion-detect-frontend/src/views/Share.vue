@@ -18,10 +18,10 @@
         />
 
         <!-- Anonymous Switch -->
-        <div class="options">
+        <!-- <div class="options">
           <a-switch v-model:checked="isAnonymous" />
           <span class="label">Post anonymously</span>
-        </div>
+        </div> -->
 
         <!-- ===== Color Picker Section ===== -->
         <div class="color-picker">
@@ -30,10 +30,10 @@
                 <div
                 v-for="(color, i) in emotionColors"
                 :key="i"
-                :style="{ background: color }"
+                :style="{ background: color.hex }"
                 class="color-dot"
-                :class="{ selected: selectedColor === color }"
-                @click="selectedColor = color"
+                :class="{ selected: selectedColor === color.hex }"
+                @click="selectedColor = color.hex"
                 ></div>
 
                 <!-- 🎨 Custom Color Button -->
@@ -48,12 +48,16 @@
 
             <!-- Floating Color Picker Panel -->
             <transition name="fade">
-                <div v-if="isCustomOpen" class="color-panel">
-                <ColorPicker
-                    :color="customColor"
-                    @changeColor="onColorChange"
-                    theme="light"
-                />
+                <div v-if="isCustomOpen" class="color-panel filter-picker-center draggable" ref="customPickerRef">
+                    <div class="picker-header">
+                        🎨 Pick a color
+                        <span class="close-btn" @click="isCustomOpen = false">✖</span>
+                    </div>
+                    <ColorPicker
+                        :color="customColor"
+                        @changeColor="onColorChange"
+                        theme="light"
+                    />
                 </div>
             </transition>
         </div>
@@ -74,6 +78,52 @@
     <!-- ===== Reflection Wall ===== -->
     <div class="wall-section" ref="wallRef">
         <h2 class="wall-title">Reflection Wall 🪞</h2>
+
+        <!-- 🔍 Filter Bar -->
+        <div class="filter-bar">
+            <a-input-search
+                v-model:value="searchQuery"
+                placeholder="Search reflections..."
+                class="search-box"
+                allow-clear
+            />
+            <a-select
+                v-model:value="selectedFilter"
+                class="color-filter"
+                style="width: 160px"
+            >
+                <a-select-option value="all">All colors</a-select-option>
+                <a-select-option
+                    v-for="c in emotionColors"
+                    :key="c.hex"
+                    :value="c.hex"
+                >
+                    <span :style="{ color: c.hex }">●</span> {{ c.name }}
+                </a-select-option>
+
+                <!-- 🟢 Custom color filter option -->
+                <a-select-option value="custom">🎨 Custom color...</a-select-option>
+            </a-select>
+        </div>
+
+        <!-- 🎨 Floating color picker for custom filter -->
+        <transition name="fade">
+            <div
+                v-if="isFilterColorPickerOpen"
+                class="color-panel filter-picker-center draggable"
+                ref="filterPickerRef"
+            >
+                <div class="picker-header">
+                    🎨 Choose custom filter color
+                    <span class="close-btn" @click="isFilterColorPickerOpen = false">✖</span>
+                </div>
+                <ColorPicker
+                    :color="customFilterColor"
+                    @changeColor="onFilterColorChange"
+                    theme="light"
+                />
+            </div>
+        </transition>
 
         <div v-for="(posts, group) in displayedGroups" :key="group">
             <h3 v-if="posts.length" class="group-title">
@@ -97,12 +147,19 @@
             </div>
             </transition-group>
         </div>
+
+        <!-- 🌫 Empty state when no reflections found -->
+        <p v-if="filteredReflections.length === 0" class="empty-state">
+            No reflections found. Try another keyword or color 🎨
+        </p>
+
         <!-- 🔽 Load More Button -->
         <div v-if="!allGroupsVisible" class="load-more">
             <a-button @click="loadMoreGroups" class="load-more-btn">
                 Load more reflections
             </a-button>
         </div>
+        
     </div>
   </section>
 </template>
@@ -120,8 +177,65 @@ const isAnonymous = ref(true)
 const selectedColor = ref('')
 const reflections = ref([])  // This now will store both new and fetched posts
 
+// ===== Search and Filter =====
+
+// User search input
+const searchQuery = ref('')
+
+// User selected color filter
+const selectedFilter = ref('all')
+
+// ===== Custom Color Filter =====
+
+// User-selected custom filter color
+const customFilterColor = ref('#aabbcc')
+
+// Watch if user selects "custom" option, auto open picker
+watch(selectedFilter, val => {
+  if (val === 'custom') isFilterColorPickerOpen.value = true
+  else isFilterColorPickerOpen.value = false
+})
+
+// Show/hide color picker for custom filtering
+const isFilterColorPickerOpen = ref(false)
+
+function onFilterColorChange(color) {
+  customFilterColor.value = color.hex
+}
+
+// Computed list after applying search + color filter
+// ===== Filtered Reflections (with text + color + custom) =====
+const filteredReflections = computed(() => {
+  return reflections.value.filter(post => {
+    // Match text (case-insensitive)
+    const matchText = post.text.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    // Match color: either "all", selected preset color, or custom color range
+    let matchColor = true
+    if (selectedFilter.value !== 'all') {
+      if (selectedFilter.value === 'custom') {
+        // When user selects "Custom color", match within similar tone range
+        const diff = colorDistance(post.color, customFilterColor.value)
+        matchColor = diff < 60 // tolerance (smaller = stricter)
+      } else {
+        matchColor = post.color === selectedFilter.value
+      }
+    }
+
+    return matchText && matchColor
+  })
+})
+
+// Use the filtered reflections when grouping by time
+// const groupedReflections = computed(() => groupReflectionsByDate(filteredReflections.value))
+
 const emotionColors = [
-  '#a5b4fc', '#f9a8d4', '#fde68a', '#6ee7b7', '#fca5a5', '#93c5fd'
+  { hex: '#a5b4fc', name: 'Lavender' },
+  { hex: '#f9a8d4', name: 'Pink' },
+  { hex: '#fde68a', name: 'Yellow' },
+  { hex: '#6ee7b7', name: 'Mint' },
+  { hex: '#fca5a5', name: 'Coral' },
+  { hex: '#93c5fd', name: 'Sky Blue' },
 ]
 
 const customColor = ref('#aabbcc')
@@ -129,8 +243,18 @@ const isCustomOpen = ref(false)
 
 function toggleColorPicker() {
   isCustomOpen.value = !isCustomOpen.value
-}
 
+  nextTick(() => {
+    const el = customPickerRef.value
+    if (el) {
+      // Force it to appear centered at start
+      el.style.position = 'fixed'
+      el.style.left = '50%'
+      el.style.top = '50%'
+      el.style.transform = 'translate(-50%, -50%)'
+    }
+  })
+}
 function onColorChange(color) {
   selectedColor.value = color.hex
   customColor.value = color.hex
@@ -159,7 +283,23 @@ const submitThought = async () => {
     message.warning('Please write something and choose a color!')
     return
   }
+
   try {
+    // 🧠 Step 1: Content moderation before posting
+    const moderationRes = await fetch('https://backend.luosong.wang/i3/api/moderate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: thought.value })
+    })
+    const moderationData = await moderationRes.json()
+
+    // ❌ If content is not allowed, stop here
+    if (!moderationData.allowed) {
+      message.error('Your post was blocked: ' + moderationData.reason)
+      return
+    }
+
+    // ✅ Step 2: Continue to add post after moderation passes
     const res = await sharehttp.post('/posts/add-post', {
       content: thought.value,
       bgColor: selectedColor.value,
@@ -198,6 +338,7 @@ const submitThought = async () => {
     thought.value = ''
     selectedColor.value = ''
     isAnonymous.value = true
+
   } catch (err) {
     message.error('Failed to share post')
     console.error('submitThought error:', err)
@@ -330,7 +471,8 @@ function groupReflectionsByDate(reflections) {
   return groups
 }
 
-const groupedReflections = computed(() => groupReflectionsByDate(reflections.value))
+// const groupedReflections = computed(() => groupReflectionsByDate(reflections.value))
+const groupedReflections = computed(() => groupReflectionsByDate(filteredReflections.value))
 
 function getGroupTitle(groupKey) {
   switch (groupKey) {
@@ -385,6 +527,32 @@ function loadMoreGroups() {
       )
     }
   })
+}
+
+// ===== Helper: Calculate color distance =====
+function colorDistance(c1, c2) {
+  // Convert hex to RGB
+  const rgb1 = hexToRgb(c1)
+  const rgb2 = hexToRgb(c2)
+  if (!rgb1 || !rgb2) return 999
+  // Euclidean distance
+  const diff = Math.sqrt(
+    Math.pow(rgb1.r - rgb2.r, 2) +
+    Math.pow(rgb1.g - rgb2.g, 2) +
+    Math.pow(rgb1.b - rgb2.b, 2)
+  )
+  return diff
+}
+
+function hexToRgb(hex) {
+  const clean = hex.replace('#', '')
+  const bigint = parseInt(clean, 16)
+  if (clean.length !== 6 || isNaN(bigint)) return null
+  return {
+    r: (bigint >> 16) & 255,
+    g: (bigint >> 8) & 255,
+    b: bigint & 255
+  }
 }
 </script>
 
@@ -503,11 +671,19 @@ function loadMoreGroups() {
   z-index: 20;
 }
 
-.wall-grid {
-  column-count: 4; /* 4 columns masonry layout */
-  column-gap: 1.8rem; /* slightly larger */
-  padding-top: 20px; /* leave breathing space */
+/* .wall-grid {
+  column-count: 4; 
+  column-gap: 1.8rem; 
+  padding-top: 20px; 
   transition: column-gap 0.3s ease;
+} */
+
+/* experimental method */
+.wall-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: masonry;
+  gap: 1.8rem;
 }
 
 @media (max-width: 1024px) {
@@ -661,5 +837,74 @@ function loadMoreGroups() {
 .load-more-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.search-box {
+  flex: 1;
+}
+
+.color-filter {
+  flex-shrink: 0;
+}
+
+/* Centered floating color picker for filter */
+.filter-picker-center {
+  position: fixed; /* make it float over entire page */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  z-index: 500;
+}
+
+.empty-state {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 1.1rem;
+  opacity: 0.85;
+  color: #f1f5f9;
+  font-style: italic;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Color Picker Draggable Header ===== */
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px 8px 0 0;
+  cursor: move;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.close-btn {
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+}
+
+.close-btn:hover {
+  transform: scale(1.2);
 }
 </style>
