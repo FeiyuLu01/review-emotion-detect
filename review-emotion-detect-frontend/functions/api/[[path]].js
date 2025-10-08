@@ -1,5 +1,5 @@
-console.log("=== Worker onRequest invoked for URL:", request.url)
 export async function onRequest(context) {
+  console.log(">>> Function called, URL:", context.request.url)
   const { request, env } = context
   const url = new URL(request.url)
   const pathname = url.pathname
