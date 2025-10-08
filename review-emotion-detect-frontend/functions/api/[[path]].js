@@ -58,7 +58,7 @@ export async function onRequest(context) {
   }
 
   // 只处理 /api/* 走反代，其它交给静态资源
-  if (!url.pathname.startsWith('/api/')) {
+  if (!url.pathname.startsWith('/api/') && !url.pathname.startsWith('/i3/api/')) {
     return context.next();
   }
 
