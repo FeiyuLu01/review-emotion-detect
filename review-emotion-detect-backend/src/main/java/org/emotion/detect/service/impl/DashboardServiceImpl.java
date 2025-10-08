@@ -2,11 +2,13 @@ package org.emotion.detect.service.impl;
 
 import org.emotion.detect.dto.KeywordStatsResponse;
 import org.emotion.detect.dto.SentimentChartResponse;
+import org.emotion.detect.enums.SentimentType;
 import org.emotion.detect.repository.DashboardRepository;
 import org.emotion.detect.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -77,6 +79,58 @@ public class DashboardServiceImpl implements DashboardService {
         
         return new SentimentChartResponse(dates, negative, positive, neutral);
     }
+    
+    @Override
+    public boolean processEmotion(String emotion) {
+        try {
+            System.out.println("Processing emotion: " + emotion);
+            
+            // 1. Insert emotion into daily_keywords table
+            dashboardRepository.insertEmotionKeyword(emotion);
+            System.out.println("Successfully inserted emotion into daily_keywords: " + emotion);
+            
+            // 2. Determine sentiment type using enum
+            String sentimentType = SentimentType.getSentimentTypeString(emotion);
+            System.out.println("Determined sentiment type for '" + emotion + "': " + sentimentType);
+            
+            // 3. Get current date
+            LocalDate currentDate = LocalDate.now();
+            java.sql.Date sqlDate = java.sql.Date.valueOf(currentDate);
+            
+            // 4. Check if sentiment record exists for today
+            boolean recordExists = dashboardRepository.existsSentimentRecordForDate(sqlDate);
+            
+            // 5. Set sentiment counts based on type
+            int positive = 0, negative = 0, neutral = 0;
+            switch (sentimentType.toLowerCase()) {
+                case "positive":
+                    positive = 1;
+                    break;
+                case "negative":
+                    negative = 1;
+                    break;
+                case "neutral":
+                    neutral = 1;
+                    break;
+            }
+            
+            // 6. Insert or update sentiment record
+            if (recordExists) {
+                dashboardRepository.updateSentimentCounts(sqlDate, positive, negative, neutral);
+                System.out.println("Updated existing sentiment record for date: " + sqlDate);
+            } else {
+                dashboardRepository.insertSentimentRecord(sqlDate, positive, negative, neutral);
+                System.out.println("Inserted new sentiment record for date: " + sqlDate);
+            }
+            
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error processing emotion: " + emotion + ", Error: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     
     /**
      * Calculate start date based on time period

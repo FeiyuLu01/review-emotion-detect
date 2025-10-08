@@ -1,5 +1,6 @@
 package org.emotion.detect.controller;
 
+import org.emotion.detect.dto.EmotionRequest;
 import org.emotion.detect.dto.KeywordStatsResponse;
 import org.emotion.detect.dto.SentimentChartResponse;
 import org.emotion.detect.service.DashboardService;
@@ -7,6 +8,7 @@ import org.emotion.detect.vo.ResponseVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
 /**
@@ -52,6 +54,25 @@ public class DashboardController {
             return ResponseVo.success(response);
         } catch (Exception e) {
             return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Error getting sentiment chart data: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Process emotion and update both daily_keywords and sentiment_summary tables
+     * @param emotionRequest the emotion request containing the emotion to process
+     * @return response indicating success or failure
+     */
+    @PostMapping("/process-emotion")
+    public ResponseVo<String> processEmotion(@Valid @RequestBody EmotionRequest emotionRequest) {
+        try {
+            boolean success = dashboardService.processEmotion(emotionRequest.getEmotion());
+            if (success) {
+                return ResponseVo.success("Emotion processed successfully: " + emotionRequest.getEmotion());
+            } else {
+                return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Failed to process emotion: " + emotionRequest.getEmotion());
+            }
+        } catch (Exception e) {
+            return ResponseVo.error(org.emotion.detect.enums.ResponseEnum.ERROR, "Error processing emotion: " + e.getMessage());
         }
     }
 }

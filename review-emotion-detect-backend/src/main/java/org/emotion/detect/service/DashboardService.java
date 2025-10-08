@@ -22,4 +22,11 @@ public interface DashboardService {
      * @return sentiment chart response with date and sentiment counts
      */
     SentimentChartResponse getSentimentChartData();
+    
+    /**
+     * Process emotion and update both daily_keywords and sentiment_summary tables
+     * @param emotion the emotion keyword to process
+     * @return true if processing was successful
+     */
+    boolean processEmotion(String emotion);
 }

@@ -70,4 +70,47 @@ public class DashboardRepositoryImpl implements DashboardRepository {
         
         return result;
     }
+
+    @Override
+    public int insertEmotionKeyword(String emotion) {
+        String sql = "INSERT INTO daily_keywords (keyword, record_date) VALUES (?, NOW())";
+        
+        System.out.println("Inserting emotion keyword: " + emotion);
+        
+        return jdbcTemplate.update(sql, emotion);
+    }
+
+    @Override
+    public boolean existsSentimentRecordForDate(java.sql.Date date) {
+        String sql = "SELECT COUNT(*) FROM sentiment_summary WHERE DATE(record_date) = ?";
+        
+        System.out.println("Checking if sentiment record exists for date: " + date);
+        
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, date);
+        boolean exists = count > 0;
+        
+        System.out.println("Sentiment record exists for date " + date + ": " + exists);
+        
+        return exists;
+    }
+
+    @Override
+    public void insertSentimentRecord(java.sql.Date date, int positive, int negative, int neutral) {
+        String sql = "INSERT INTO sentiment_summary (record_date, positive, negative, neutral) VALUES (?, ?, ?, ?)";
+        
+        System.out.println("Inserting new sentiment record for date: " + date + 
+                          " positive: " + positive + " negative: " + negative + " neutral: " + neutral);
+        
+        jdbcTemplate.update(sql, date, positive, negative, neutral);
+    }
+
+    @Override
+    public void updateSentimentCounts(java.sql.Date date, int positive, int negative, int neutral) {
+        String sql = "UPDATE sentiment_summary SET positive = positive + ?, negative = negative + ?, neutral = neutral + ? WHERE DATE(record_date) = ?";
+        
+        System.out.println("Updating sentiment counts for date: " + date + 
+                          " positive: +" + positive + " negative: +" + negative + " neutral: +" + neutral);
+        
+        jdbcTemplate.update(sql, positive, negative, neutral, date);
+    }
 }
