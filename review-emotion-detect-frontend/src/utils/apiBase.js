@@ -18,4 +18,7 @@ export const Test_API_BASE =
 export const SHARE_REVIEW_API_BASE =
   isLocal ? stripSlash(import.meta.env.VITE_SHARE_REVIEW_API) : '/api';
 
+export const DASHBOARD_API_BASE =
+  isLocal ? stripSlash(import.meta.env.VITE_DASHBOARD_API) : '/api';
+
 export { isLocal };

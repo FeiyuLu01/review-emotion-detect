@@ -21,6 +21,7 @@
     "ant-design-vue": "^4.2.6",
     "axios": "^1.11.0",
     "echarts": "^6.0.0",
+    "echarts-wordcloud": "^2.1.0",
     "gsap": "^3.13.0",
     "pinia": "^3.0.3",
     "split-type": "^0.3.4",

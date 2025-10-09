@@ -1,166 +1,198 @@
 <template>
   <section class="share-page">
-    <!-- ===== Hero Section ===== -->
-    <div class="share-hero" ref="heroRef">
-      <h1 class="title">
-        <span class="gradient-text">Anonymous Reflection Wall</span>
-      </h1>
-      <p class="subtitle">Express your thoughts freely, color your emotions 🌈</p>
+    <!-- ===== Top Toggle Buttons (New) ===== -->
+    <div class="view-toggle">
+      <a-button-group>
+        <a-button
+          :type="activeTab === 'reflection' ? 'primary' : 'default'"
+          class="toggle-btn"
+          @click="switchTab('reflection')"
+        >
+          🪞 Reflection Wall
+        </a-button>
+        <a-button
+          :type="activeTab === 'mood' ? 'primary' : 'default'"
+          class="toggle-btn"
+          @click="switchTab('mood')"
+        >
+          📊 Community Mood
+        </a-button>
+      </a-button-group>
     </div>
 
-    <!-- ===== Input Section ===== -->
-    <div class="share-container" ref="formRef">
-      <a-card class="share-card" :bordered="false">
-        <a-textarea
-          v-model:value="thought"
-          placeholder="Write your thoughts about your online experience..."
-          :rows="6"
-        />
+    <!-- ===== Hero Section (Now inside transition for hiding) ===== -->
+    <transition name="fade" mode="out-in">
+      <div
+        v-if="activeTab === 'reflection'"
+        key="hero"
+        class="share-hero"
+        ref="heroRef"
+      >
+        <h1 class="title">
+          <span class="gradient-text">Anonymous Reflection Wall</span>
+        </h1>
+        <p class="subtitle">
+          Express your thoughts freely, color your emotions 🌈
+        </p>
+      </div>
+    </transition>
 
-        <!-- Anonymous Switch -->
-        <!-- <div class="options">
-          <a-switch v-model:checked="isAnonymous" />
-          <span class="label">Post anonymously</span>
-        </div> -->
+    <!-- ===== Content Switcher ===== -->
+    <transition name="fade" mode="out-in">
+      <div v-if="activeTab === 'reflection'" key="reflection">
+        <!-- ===== Input Section ===== -->
+        <div class="share-container" ref="formRef">
+          <a-card class="share-card" :bordered="false">
+            <a-textarea
+              v-model:value="thought"
+              placeholder="Write your thoughts about your online experience..."
+              :rows="6"
+            />
 
-        <!-- ===== Color Picker Section ===== -->
-        <div class="color-picker">
-            <span class="label">Choose your emotion color:</span>
-            <div class="color-options">
+            <!-- ===== Color Picker Section ===== -->
+            <div class="color-picker">
+              <span class="label">Choose your emotion color:</span>
+              <div class="color-options">
                 <div
-                v-for="(color, i) in emotionColors"
-                :key="i"
-                :style="{ background: color.hex }"
-                class="color-dot"
-                :class="{ selected: selectedColor === color.hex }"
-                @click="selectedColor = color.hex"
+                  v-for="(color, i) in emotionColors"
+                  :key="i"
+                  :style="{ background: color.hex }"
+                  class="color-dot"
+                  :class="{ selected: selectedColor === color.hex }"
+                  @click="selectedColor = color.hex"
                 ></div>
 
                 <!-- 🎨 Custom Color Button -->
                 <div
-                class="color-dot custom-picker"
-                :class="{ selected: isCustomOpen }"
-                @click="toggleColorPicker"
+                  class="color-dot custom-picker"
+                  :class="{ selected: isCustomOpen }"
+                  @click="toggleColorPicker"
                 >
-                🎨
+                  🎨
                 </div>
+              </div>
+
+              <!-- Floating Color Picker Panel -->
+              <transition name="fade">
+                <div
+                  v-if="isCustomOpen"
+                  class="color-panel filter-picker-center draggable"
+                  ref="customPickerRef"
+                >
+                  <div class="picker-header">
+                    🎨 Pick a color
+                    <span class="close-btn" @click="isCustomOpen = false">✖</span>
+                  </div>
+                  <ColorPicker
+                    :color="customColor"
+                    @changeColor="onColorChange"
+                    theme="light"
+                  />
+                </div>
+              </transition>
             </div>
 
-            <!-- Floating Color Picker Panel -->
-            <transition name="fade">
-                <div v-if="isCustomOpen" class="color-panel filter-picker-center draggable" ref="customPickerRef">
-                    <div class="picker-header">
-                        🎨 Pick a color
-                        <span class="close-btn" @click="isCustomOpen = false">✖</span>
-                    </div>
-                    <ColorPicker
-                        :color="customColor"
-                        @changeColor="onColorChange"
-                        theme="light"
-                    />
-                </div>
-            </transition>
+            <!-- Submit Button -->
+            <a-button
+              type="primary"
+              class="submit-btn"
+              size="large"
+              :disabled="isDisabled"
+              @click="submitThought"
+            >
+              Share it ✨
+            </a-button>
+          </a-card>
         </div>
 
-        <!-- Submit Button -->
-        <a-button
-          type="primary"
-          class="submit-btn"
-          size="large"
-          :disabled="isDisabled"
-          @click="submitThought"
-        >
-          Share it ✨
-        </a-button>
-      </a-card>
-    </div>
+        <!-- ===== Reflection Wall ===== -->
+        <div class="wall-section" ref="wallRef">
+          <h2 class="wall-title">Reflection Wall 🪞</h2>
 
-    <!-- ===== Reflection Wall ===== -->
-    <div class="wall-section" ref="wallRef">
-        <h2 class="wall-title">Reflection Wall 🪞</h2>
-
-        <!-- 🔍 Filter Bar -->
-        <div class="filter-bar">
+          <!-- 🔍 Filter Bar -->
+          <div class="filter-bar">
             <a-input-search
-                v-model:value="searchQuery"
-                placeholder="Search reflections..."
-                class="search-box"
-                allow-clear
+              v-model:value="searchQuery"
+              placeholder="Search reflections..."
+              class="search-box"
+              allow-clear
             />
             <a-select
-                v-model:value="selectedFilter"
-                class="color-filter"
-                style="width: 160px"
+              v-model:value="selectedFilter"
+              class="color-filter"
+              style="width: 160px"
             >
-                <a-select-option value="all">All colors</a-select-option>
-                <a-select-option
-                    v-for="c in emotionColors"
-                    :key="c.hex"
-                    :value="c.hex"
-                >
-                    <span :style="{ color: c.hex }">●</span> {{ c.name }}
-                </a-select-option>
-
-                <!-- 🟢 Custom color filter option -->
-                <a-select-option value="custom">🎨 Custom color...</a-select-option>
+              <a-select-option value="all">All colors</a-select-option>
+              <a-select-option
+                v-for="c in emotionColors"
+                :key="c.hex"
+                :value="c.hex"
+              >
+                <span :style="{ color: c.hex }">●</span> {{ c.name }}
+              </a-select-option>
+              <a-select-option value="custom">🎨 Custom color...</a-select-option>
             </a-select>
-        </div>
+          </div>
 
-        <!-- 🎨 Floating color picker for custom filter -->
-        <transition name="fade">
+          <!-- Floating custom filter color picker -->
+          <transition name="fade">
             <div
-                v-if="isFilterColorPickerOpen"
-                class="color-panel filter-picker-center draggable"
-                ref="filterPickerRef"
+              v-if="isFilterColorPickerOpen"
+              class="color-panel filter-picker-center draggable"
+              ref="filterPickerRef"
             >
-                <div class="picker-header">
-                    🎨 Choose custom filter color
-                    <span class="close-btn" @click="isFilterColorPickerOpen = false">✖</span>
-                </div>
-                <ColorPicker
-                    :color="customFilterColor"
-                    @changeColor="onFilterColorChange"
-                    theme="light"
-                />
+              <div class="picker-header">
+                🎨 Choose custom filter color
+                <span
+                  class="close-btn"
+                  @click="isFilterColorPickerOpen = false"
+                  >✖</span
+                >
+              </div>
+              <ColorPicker
+                :color="customFilterColor"
+                @changeColor="onFilterColorChange"
+                theme="light"
+              />
             </div>
-        </transition>
+          </transition>
 
-        <div v-for="(posts, group) in displayedGroups" :key="group">
+          <div v-for="(posts, group) in displayedGroups" :key="group">
             <h3 v-if="posts.length" class="group-title">
-            {{ getGroupTitle(group) }}
+              {{ getGroupTitle(group) }}
             </h3>
 
             <transition-group name="fade" tag="div" class="wall-grid">
-            <div
+              <div
                 v-for="(post, index) in posts"
                 :key="index"
                 class="wall-item"
                 :style="{ background: post.color }"
-            >
+              >
                 <p class="post-content">{{ post.text }}</p>
                 <p class="post-author">
-                {{ post.anonymous ? 'Anonymous' : 'You' }}
+                  {{ post.anonymous ? 'Anonymous' : 'You' }}
                 </p>
-                <p class="post-date">
-                🕓 {{ formatDate(post.createdAt) }}
-                </p>
-            </div>
+                <p class="post-date">🕓 {{ formatDate(post.createdAt) }}</p>
+              </div>
             </transition-group>
-        </div>
+          </div>
 
-        <!-- 🌫 Empty state when no reflections found -->
-        <p v-if="filteredReflections.length === 0" class="empty-state">
+          <p v-if="filteredReflections.length === 0" class="empty-state">
             No reflections found. Try another keyword or color 🎨
-        </p>
+          </p>
 
-        <!-- 🔽 Load More Button -->
-        <div v-if="!allGroupsVisible" class="load-more">
+          <div v-if="!allGroupsVisible" class="load-more">
             <a-button @click="loadMoreGroups" class="load-more-btn">
-                Load more reflections
+              Load more reflections
             </a-button>
+          </div>
         </div>
-        
-    </div>
+      </div>
+
+      <!-- ===== Epic 6 Dashboard ===== -->
+      <CommunityMood v-else key="mood" />
+    </transition>
   </section>
 </template>
 
@@ -171,6 +203,23 @@ import { sharehttp } from '@/api/http'
 import { message } from 'ant-design-vue'
 import { ColorPicker } from 'vue-color-kit'
 import 'vue-color-kit/dist/vue-color-kit.css'
+import CommunityMood from './CommunityMood.vue'
+
+// ===== Tab Switch Logic =====
+const activeTab = ref('reflection') // 'reflection' | 'mood'
+function switchTab(tab) {
+  if (tab === activeTab.value) return
+  gsap.to('.share-hero', { opacity: 0, y: -30, duration: 0.3 })
+  setTimeout(() => {
+    activeTab.value = tab
+    gsap.fromTo(
+      '.share-hero',
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }
+    )
+  }, 250)
+}
+
 
 const thought = ref('')
 const isAnonymous = ref(true)
@@ -563,7 +612,7 @@ function hexToRgb(hex) {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 120px;
+  padding-top: 40px;
   background: radial-gradient(circle at 30% 20%, #a78bfa, #6366f1, #1e3a8a);
   color: #fff;
   overflow-x: hidden;
@@ -574,6 +623,7 @@ function hexToRgb(hex) {
   font-size: 3rem;
   text-align: center;
   margin-bottom: 8px;
+  margin-top: 120px;
 }
 
 .gradient-text {
@@ -590,7 +640,7 @@ function hexToRgb(hex) {
 
 /* Form Section */
 .share-container {
-  margin-top: 60px;
+  margin: 60px auto 0 auto;
   width: 90%;
   max-width: 640px;
 }
@@ -906,5 +956,26 @@ function hexToRgb(hex) {
 
 .close-btn:hover {
   transform: scale(1.2);
+}
+
+/* ===== Top Toggle Buttons ===== */
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.toggle-btn {
+  font-weight: 600;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 </style>
