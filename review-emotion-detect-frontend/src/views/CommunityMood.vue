@@ -34,11 +34,10 @@
 </template>
 
 <script setup>
-// Imports
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import * as echarts from 'echarts'
-import 'echarts-wordcloud'
+import * as d3 from 'd3'
+import cloud from 'd3-cloud'
 import axios from 'axios'
 import { sharehttp, dashboardhttp } from '@/api/http'
 import { API_BASE } from '@/utils/apiBase'
@@ -46,7 +45,6 @@ import { API_BASE } from '@/utils/apiBase'
 // 分类接口 URL
 const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 
-// ----- State & Options -----
 const selectedPeriod = ref('weekly')
 const periodOptions = ['weekly', 'monthly', 'yearly']
 
@@ -59,22 +57,15 @@ const moodStats = ref([
 const keywordData = ref({})
 
 const wordCloudRef = ref(null)
-let chartInstance = null
 
 const formattedTitle = computed(() => {
   switch (selectedPeriod.value) {
-    case 'weekly':
-      return "This Week’s Community Mood"
-    case 'monthly':
-      return "This Month’s Community Mood"
-    case 'yearly':
-      return "This Year’s Community Mood"
-    default:
-      return "Community Mood"
+    case 'weekly': return "This Week’s Community Mood"
+    case 'monthly': return "This Month’s Community Mood"
+    case 'yearly': return "This Year’s Community Mood"
+    default: return "Community Mood"
   }
 })
-
-// ----- Functions: classify & aggregate -----
 
 async function fetchAllReflections() {
   try {
@@ -89,18 +80,10 @@ async function fetchAllReflections() {
 async function classifyText(text) {
   try {
     console.log('start classify', text)
-    // 使用 axios.post 到 CLASSIFY_URL
     const resp = await axios.post(CLASSIFY_URL, { text })
     console.log('resp from classify:', resp)
-    // 根据你后台返回结构提取 sentiment 字段
-    // 可能是 resp.data.sentiment 或 resp.data.data.sentiment 等
-    if (resp.data && resp.data.sentiment) {
-      return resp.data.sentiment
-    }
-    // fallback: maybe resp.data.data.sentiment
-    if (resp.data && resp.data.data && resp.data.data.sentiment) {
-      return resp.data.data.sentiment
-    }
+    if (resp.data && resp.data.sentiment) return resp.data.sentiment
+    if (resp.data && resp.data.data && resp.data.data.sentiment) return resp.data.data.sentiment
     return null
   } catch (err) {
     console.error('classifyText error', err)
@@ -115,7 +98,6 @@ async function classifyBatch(texts, batchSize = 5) {
     const promises = slice.map(t => classifyText(t).catch(() => null))
     const res = await Promise.all(promises)
     results.push(...res)
-    // 延迟避免压力
     await new Promise(r => setTimeout(r, 200))
   }
   return results
@@ -124,10 +106,13 @@ async function classifyBatch(texts, batchSize = 5) {
 async function computeMoodStats() {
   console.log("computeMoodStats invoked, selectedPeriod =", selectedPeriod.value)
   const posts = await fetchAllReflections()
-  console.log("Example post:", posts[0])
   console.log("Fetched posts count:", posts.length)
   if (!posts.length) {
-    moodStats.value = moodStats.value.map(item => ({ ...item, value: 0 }))
+    moodStats.value = moodStats.value.map(i => ({ ...i, value: 0 }))
+    // 清空词云
+    nextTick(() => {
+      if (wordCloudRef.value) wordCloudRef.value.innerHTML = ''
+    })
     return
   }
 
@@ -139,46 +124,43 @@ async function computeMoodStats() {
       return ts >= now - 7 * 24 * 3600 * 1000
     } else if (selectedPeriod.value === 'monthly') {
       return ts >= now - 30 * 24 * 3600 * 1000
-    } else if (selectedPeriod.value === 'yearly') {
+    } else {
       return ts >= now - 365 * 24 * 3600 * 1000
     }
-    return true
   })
-  console.log("Filtered posts count (by period):", filtered.length)
 
   const texts = filtered
-    .map(p => {
-      if (typeof p.content === 'string') return p.content
-      if (typeof p.text === 'string') return p.text
-      return ''
+    .map(p => (typeof p.content === 'string' ? p.content : ''))
+    .filter(t => t.trim().length > 0)
+
+  // 获取关键词数据
+  try {
+    const resp = await dashboardhttp.get('/dashboard/sort-emotion', {
+      params: { timePeriod: selectedPeriod.value }
     })
-    .filter(t => typeof t === 'string' && t.trim().length > 0)
-  console.log("Texts array for classification:", texts.slice(0, 5), "... total", texts.length)
-  if (texts.length === 0) {
-    moodStats.value = moodStats.value.map(item => ({ ...item, value: 0 }))
-    return
+    keywordData.value = resp.data.keywordStats ?? {}
+  } catch (err) {
+    console.error('fetchKeywordStats error', err)
+    keywordData.value = {}
   }
 
-  const sentiments = await classifyBatch(texts, 5)
-  console.log("Classification results:", sentiments.slice(0, 10), " total", sentiments.length)
+  // 渲染词云
+  await nextTick()
+  renderD3Cloud()
 
+  // 情绪统计
+  const sentiments = await classifyBatch(texts, 5)
   let pos = 0, neu = 0, neg = 0
   sentiments.forEach(s => {
     if (s === 'positive') pos++
     else if (s === 'neutral') neu++
     else if (s === 'negative') neg++
   })
-  console.log("pos, neu, neg counts:", pos, neu, neg)
-
   const total = pos + neu + neg || 1
-  const posPct = (pos / total) * 100
-  const neuPct = (neu / total) * 100
-  const negPct = (neg / total) * 100
-
   moodStats.value = [
-    { label: '😄 Positive', value: posPct, bg: 'linear-gradient(135deg,#6ee7b7,#3b82f6)' },
-    { label: '😐 Neutral', value: neuPct, bg: 'linear-gradient(135deg,#e5e7eb,#9ca3af)' },
-    { label: '😠 Negative', value: negPct, bg: 'linear-gradient(135deg,#fca5a5,#ef4444)' }
+    { label: '😄 Positive', value: (pos / total) * 100, bg: 'linear-gradient(135deg,#6ee7b7,#3b82f6)' },
+    { label: '😐 Neutral', value: (neu / total) * 100, bg: 'linear-gradient(135deg,#e5e7eb,#9ca3af)' },
+    { label: '😠 Negative', value: (neg / total) * 100, bg: 'linear-gradient(135deg,#fca5a5,#ef4444)' }
   ]
 
   gsap.from('.mood-card', {
@@ -190,126 +172,139 @@ async function computeMoodStats() {
   })
 }
 
-function renderWordCloud() {
+function renderD3Cloud() {
   const container = wordCloudRef.value
   if (!container) return
-  if (!chartInstance) {
-    chartInstance = echarts.init(container)
-    window.addEventListener('resize', () => chartInstance.resize())
+  container.innerHTML = ''
+
+  const width = container.clientWidth || 600
+  const height = container.clientHeight || 400
+
+  const data = Object.entries(keywordData.value).map(([text, weight]) => {
+    return { text, weight }
+  })
+
+  const layout = cloud()
+    .size([width, height])
+    .words(data.map(d => ({
+      text: d.text,
+      size: d.weight * 5 + 20  // 这个缩放比可以调整
+    })))
+    .padding(5)
+    .rotate(() => (Math.random() > 0.5 ? 0 : 90))
+    .font('Impact')
+    .fontSize(d => d.size)
+    .spiral('archimedean')
+    .on('end', draw)
+
+  layout.start()
+
+  function draw(words) {
+    const svg = d3.select(container)
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+
+    const g = svg.append('g')
+      .attr('transform', `translate(${width / 2},${height / 2})`)
+
+    const texts = g.selectAll('text')
+      .data(words)
+      .enter().append('text')
+      .style('font-family', 'Impact')
+      .style('fill', () => {
+        const colors = ['#f472b6', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa']
+        return colors[Math.floor(Math.random() * colors.length)]
+      })
+      .attr('text-anchor', 'middle')
+      .attr('transform', d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+      .style('font-size', '0px')
+      .style('opacity', 0)
+      .text(d => d.text)
+
+    // 入场动画：一个接一个地显现、缩放
+    texts.transition()
+      .delay((d, i) => i * 30)
+      .duration(800)
+      .style('font-size', d => `${d.size}px`)
+      .style('opacity', 1)
+      .ease(d3.easeCubicOut)
   }
-  const dataArr = Object.entries(keywordData.value).map(([name, val]) => ({
-    name,
-    value: val
-  }))
-  const option = {
-    tooltip: {},
-    series: [
-      {
-        type: 'wordCloud',
-        gridSize: 8,
-        sizeRange: [16, 60],
-        rotationRange: [-45, 45],
-        shape: 'circle',
-        textStyle: {
-          color: () => {
-            const cols = ['#f472b6', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa']
-            return cols[Math.floor(Math.random() * cols.length)]
-          }
-        },
-        data: dataArr
-      }
-    ]
-  }
-  chartInstance.setOption(option)
 }
 
-async function fetchKeywordStats() {
-  try {
-    const res = await dashboardhttp.get('/dashboard/sort-emotion', {
-      params: { timePeriod: selectedPeriod.value }
-    })
-    const stats = (res.data && res.data.keywordStats) || {}
-    keywordData.value = stats
-    renderWordCloud()
-  } catch (err) {
-    console.error('fetchKeywordStats error', err)
-  }
-}
-
-// Watch & init
+// 监听周期变化
 watch(selectedPeriod, () => {
   computeMoodStats()
-  fetchKeywordStats()
 })
 
 onMounted(async () => {
   await nextTick()
-  console.log("onMounted: starting computeMoodStats & fetchKeywordStats")
   computeMoodStats()
-  fetchKeywordStats()
 })
 </script>
 
 <style scoped>
-/* 保持你原有样式 */
 .mood-dashboard {
-  max-width: 800px;
-  margin: 60px auto;
-  text-align: center;
-  color: #fff;
+max-width: 800px;
+margin: 60px auto;
+text-align: center;
+color: #fff;
 }
 .mood-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 20px;
+margin-bottom: 20px;
 }
 .dashboard-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0;
-  background: linear-gradient(90deg, #ff7ee5, #84fab0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+font-size: 2.2rem;
+font-weight: 700;
+margin: 0;
+background: linear-gradient(90deg, #ff7ee5, #84fab0);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
 }
 .period-switch {
-  font-size: 0.9rem;
+font-size: 0.9rem;
 }
 .mood-stats {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
+display: flex;
+justify-content: center;
+gap: 20px;
+flex-wrap: wrap;
+margin-bottom: 20px;
 }
 .mood-card {
-  width: 180px;
-  border: none;
-  border-radius: 14px;
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+width: 180px;
+border: none;
+border-radius: 14px;
+color: #fff;
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+transition: transform 0.3s ease;
 }
 .mood-card:hover {
-  transform: translateY(-6px) scale(1.05);
+transform: translateY(-6px) scale(1.05);
 }
 .percent {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-top: 8px;
+font-size: 2rem;
+font-weight: 700;
+margin-top: 8px;
 }
 .summary-text {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin-bottom: 40px;
+font-size: 1.1rem;
+opacity: 0.9;
+margin-bottom: 40px;
 }
 .word-cloud {
-  height: 400px;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+height: 400px;
+width: 100%;
+background: rgba(255, 255, 255, 0.08);
+border-radius: 16px;
+backdrop-filter: blur(8px);
+box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+position: relative;
+overflow: hidden;
 }
+
 </style>
