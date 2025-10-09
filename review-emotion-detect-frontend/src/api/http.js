@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
-import { API_BASE, Test_API_BASE, SHARE_REVIEW_API_BASE } from '@/utils/apiBase'  
+import { API_BASE, Test_API_BASE, SHARE_REVIEW_API_BASE, DASHBOARD_API_BASE } from '@/utils/apiBase'  
 
 function setupInterceptors(instance) {
   instance.interceptors.request.use(
@@ -47,5 +47,12 @@ const sharehttp = setupInterceptors(
   })
 )
 
-export { http, testHttp, sharehttp }
+const dashboardhttp = setupInterceptors(
+  axios.create({
+    baseURL: DASHBOARD_API_BASE,   
+    timeout: 15000,
+  })
+)
+
+export { http, testHttp, sharehttp, dashboardhttp }
 export default http
