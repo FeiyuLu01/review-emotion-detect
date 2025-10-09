@@ -26,6 +26,7 @@ export async function onRequest(context) {
     pathname.startsWith("/api/emotion") ||
     pathname.startsWith("/api/emotion_analysis") ||
     pathname.startsWith("/api/posts") ||
+    pathname.startsWith("/api/dashboard") ||
     pathname.startsWith("/api/moderate") ||
     pathname.startsWith("/api/v3") ||
     pathname.startsWith("/api/swagger") ||
