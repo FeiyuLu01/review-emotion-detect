@@ -205,6 +205,7 @@ import { ColorPicker } from 'vue-color-kit'
 import 'vue-color-kit/dist/vue-color-kit.css'
 import CommunityMood from './CommunityMood.vue'
 import { API_BASE } from '@/utils/apiBase'
+import axios from 'axios'
 
 const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 
