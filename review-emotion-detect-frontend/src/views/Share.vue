@@ -193,6 +193,19 @@
       <!-- ===== Epic 6 Dashboard ===== -->
       <CommunityMood v-else key="mood" />
     </transition>
+
+    <!-- ===== Explore More Section ===== -->
+    <div class="explore-section">
+        <h3 class="explore-title">✨ Want to explore more features?</h3>
+        <div class="explore-buttons">
+            <a-button type="primary" class="explore-btn analyze" @click="$router.push('/analyze')">
+            🔍 Try Analyze
+            </a-button>
+            <a-button type="primary" class="explore-btn test" @click="$router.push('/test')">
+            🧠 Try Test Mode
+            </a-button>
+        </div>
+    </div>
   </section>
 </template>
 
@@ -1022,5 +1035,70 @@ function hexToRgb(hex) {
   display: flex;
   flex-direction: column;
   align-items: center; 
+}
+
+/* ===== Explore More Section ===== */
+.explore-section {
+  margin-top: 80px;
+  text-align: center;
+  color: #fff;
+  animation: fadeInUp 1.2s ease;
+}
+
+.explore-title {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.explore-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.explore-btn {
+  display: inline-flex;              
+  align-items: center;              
+  justify-content: center;           
+  gap: 8px;                         
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 30px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  height: auto;                     
+  line-height: 1;   
+  margin-bottom: 40px;              
+}
+
+.explore-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Subtle entrance animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.explore-btn.analyze {
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+}
+
+.explore-btn.test {
+  background: linear-gradient(90deg, #f43f5e, #f59e0b);
 }
 </style>

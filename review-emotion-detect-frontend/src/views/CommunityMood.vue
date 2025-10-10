@@ -5,6 +5,8 @@
         {{ formattedTitle }} 
         <span class="emoji">🌈</span>
       </h2>
+      <!-- 🪄 Animated Intro Text -->
+      <p ref="introTextRef" class="intro-text"></p>
       <a-segmented
         v-model:value="selectedPeriod"
         :options="periodOptions"
@@ -32,12 +34,17 @@
     <!-- ===== Word Cloud Visualization ===== -->
     <div ref="wordCloudRef" class="word-cloud"></div>
 
+    <!-- ===== Intro to Line Chart ===== -->
+    <div class="line-chart-intro">
+        <p ref="lineIntroRef" class="line-intro-text"></p>
+    </div>
+
     <!-- ===== Line Chart Selector & Preview ===== -->
     <div class="line-chart-section">
         <div class="chart-toggle">
             <a-segmented
             v-model:value="selectedChart"
-            :options="['App Data', 'Twitter Data']"
+            :options="['App Data', 'YouTube Data']"
             class="chart-switch"
             />
         </div>
@@ -52,13 +59,15 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { gsap } from 'gsap'
 import * as d3 from 'd3'
 import cloud from 'd3-cloud'
 import axios from 'axios'
 import { sharehttp, dashboardhttp } from '@/api/http'
 import { API_BASE } from '@/utils/apiBase'
 import * as echarts from 'echarts'
+import { gsap } from 'gsap'
+import { TextPlugin } from 'gsap/TextPlugin'
+gsap.registerPlugin(TextPlugin)
 
 const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 
@@ -80,6 +89,40 @@ const formattedTitle = computed(() => {
     case 'monthly': return "This Month’s Community Mood"
     case 'yearly': return "This Year’s Community Mood"
     default: return "Community Mood"
+  }
+})
+
+const introTextRef = ref(null)
+const lineIntroRef = ref(null)
+
+onMounted(async () => {
+  if (introTextRef.value) {
+    gsap.fromTo(
+      introTextRef.value,
+      { text: '', opacity: 0 },
+      {
+        duration: 2.5,
+        text: "💡 Discover how the community is feeling — insights in real time! Choose a time period and see the percentage of each emotion",
+        opacity: 1,
+        ease: 'none',
+        delay: 0.5
+      }
+    )
+  }
+
+  if (lineIntroRef.value) {
+    gsap.fromTo(
+        lineIntroRef.value,
+        { text: '', opacity: 0, y: 20 },
+        {
+            duration: 2,
+            text: "Switch between App Data & YouTube Data to view emotion trends over time",
+            opacity: 1,
+            y: 0,
+            ease: 'power3.out',
+            delay: 1
+        }
+    )
   }
 })
 
@@ -341,7 +384,7 @@ async function fetchChartData() {
     if (selectedChart.value === 'App Data') {
       renderLineChart(resp.data)
     } else {
-      renderTwitterChart(resp.data)
+      renderYouTubeChart(resp.data)
     }
   } catch (err) {
     console.error(`❌ Failed to fetch ${selectedChart.value} data:`, err)
@@ -447,9 +490,9 @@ function renderLineChart(data) {
 }
 
 /**
- * Render Twitter Data line chart with animation and gradient
+ * Render YouTube Data line chart with animation and gradient
  */
-function renderTwitterChart(data) {
+function renderYouTubeChart(data) {
   if (!lineChartRef.value) return
   const chart = echarts.init(lineChartRef.value)
 
@@ -570,6 +613,7 @@ align-items: center;
 justify-content: center;
 gap: 20px;
 margin-bottom: 20px;
+flex-direction: column;
 }
 .dashboard-title {
 font-size: 2.2rem;
@@ -663,5 +707,58 @@ overflow: hidden;
   justify-content: center;
   color: #ddd;
   font-size: 1rem;
+}
+
+/* ===== Intro Animated Text ===== */
+.intro-text {
+  font-size: 1rem;
+  color: #e0f2fe;
+  font-style: italic;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+  min-height: 24px; 
+  opacity: 0; 
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ===== Line Chart Intro Prompt ===== */
+.line-chart-intro {
+  width: 100%;
+  margin: 24px 0 12px; 
+  text-align: center;
+}
+
+
+.line-intro-text {
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  background: linear-gradient(
+    90deg,
+    #ffd700,
+    #ff8c00,
+    #9cbe2a,
+    #00ffff,
+    #90ee90
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hueShift 6s linear infinite;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6),
+               0 0 24px rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.4px;
+  line-height: 1.4;
+  max-width: 720px;
+  margin: 0 auto;
+  opacity: 0; /* Controlled by GSAP animation */
+}
+
+@keyframes hueShift {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 </style>
