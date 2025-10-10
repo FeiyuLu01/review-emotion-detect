@@ -24,8 +24,8 @@
       </a-card>
     </div>
 
-    <p class="summary-text">
-      Based on recent reflections, here's how the community is feeling.
+    <p ref="summaryRef" class="summary-text">
+      {{ summaryMessage }}
     </p>
 
     <!-- ===== Word Cloud Visualization ===== -->
@@ -179,12 +179,67 @@ async function computeMoodStats() {
     { label: '😠 Negative', value: (neg / total) * 100, bg: 'linear-gradient(135deg,#fca5a5,#ef4444)' }
   ]
 
+  updateSummaryMessage((pos / total) * 100, (neu / total) * 100, (neg / total) * 100)
+
   gsap.from('.mood-card', {
     opacity: 0,
     y: 20,
     stagger: 0.1,
     duration: 0.5,
     ease: 'power3.out'
+  })
+}
+
+// summary message state
+const summaryMessage = ref("Based on recent reflections, here's how the community is feeling.")
+const summaryRef = ref(null)
+
+/* ---------- Update summary message with GSAP animation ---------- */
+function updateSummaryMessage(posPct, neuPct, negPct) {
+  // Determine dominant tone
+  const dominant = Math.max(posPct, neuPct, negPct)
+  let newMessage = ''
+  let color = '#fff'
+
+  if (dominant === posPct) {
+    newMessage = "🌞 The community is shining with positivity and kindness!"
+    color = '#6ee7b7'
+  } else if (dominant === neuPct) {
+    newMessage = "🌤 A calm and balanced atmosphere surrounds the community."
+    color = '#e5e7eb'
+  } else {
+    newMessage = "🌧 Emotions are a bit tense lately. Let’s uplift the mood together."
+    color = '#fca5a5'
+  }
+
+  summaryMessage.value = newMessage
+
+  // Animate the text glow and entrance
+  nextTick(() => {
+    if (!summaryRef.value) return
+    gsap.fromTo(
+      summaryRef.value,
+      { opacity: 0, y: 20, scale: 0.95, color },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 1,
+        ease: 'power3.out',
+        color,
+        boxShadow: `0 0 20px ${color}`,
+        onComplete: () => {
+          // subtle pulsing glow
+          gsap.to(summaryRef.value, {
+            boxShadow: `0 0 40px ${color}`,
+            repeat: -1,
+            yoyo: true,
+            duration: 2,
+            ease: 'sine.inOut'
+          })
+        }
+      }
+    )
   })
 }
 
@@ -311,6 +366,14 @@ backdrop-filter: blur(8px);
 box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 position: relative;
 overflow: hidden;
+}
+
+.summary-text {
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.3);
+  transition: color 0.6s ease;
 }
 
 </style>
