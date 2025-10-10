@@ -353,6 +353,8 @@ const submitThought = async () => {
     // ✅ Step 3: Emotion classification using Gemini API
     try {
       const classifyResp = await axios.post(CLASSIFY_URL, { text: thought.value })
+      console.log('classifyResp: ', classifyResp);
+      
       const results = classifyResp.data?.results || classifyResp.data?.data?.results || []
       if (Array.isArray(results) && results.length > 0) {
         // find the label with highest score
