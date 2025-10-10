@@ -199,11 +199,14 @@
 <script setup>
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { gsap } from 'gsap'
-import { sharehttp } from '@/api/http'
+import { sharehttp, dashboardhttp } from '@/api/http'
 import { message } from 'ant-design-vue'
 import { ColorPicker } from 'vue-color-kit'
 import 'vue-color-kit/dist/vue-color-kit.css'
 import CommunityMood from './CommunityMood.vue'
+import { API_BASE } from '@/utils/apiBase'
+
+const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 
 // ===== Tab Switch Logic =====
 const activeTab = ref('reflection') // 'reflection' | 'mood'
@@ -333,22 +336,39 @@ const submitThought = async () => {
     })
     const moderationData = await moderationRes.json()
     console.log('moderationData: ', moderationData);
-    
 
-    // ❌ If content is not allowed, stop here
     if (!moderationData.allowed) {
       message.error('Your post was blocked: ' + moderationData.reason)
       return
     }
 
-    // ✅ Step 2: Continue to add post after moderation passes
+    // ✅ Step 2: Add post to backend
     const res = await sharehttp.post('/posts/add-post', {
       content: thought.value,
       bgColor: selectedColor.value,
     })
     console.log('API response:', res)
-    const postData = res  // because response is the post object
+    const postData = res
 
+    // ✅ Step 3: Emotion classification using Gemini API
+    try {
+      const classifyResp = await axios.post(CLASSIFY_URL, { text: thought.value })
+      const results = classifyResp.data?.results || classifyResp.data?.data?.results || []
+      if (Array.isArray(results) && results.length > 0) {
+        // find the label with highest score
+        const top = results.reduce((a, b) => (a.score > b.score ? a : b))
+        const emotion = top.label
+        console.log('Detected top emotion:', emotion)
+
+        // ✅ Step 4: Send emotion to dashboard processor
+        await dashboardhttp.post('/dashboard/process-emotion', { emotion })
+        console.log('Sent to /dashboard/process-emotion successfully')
+      }
+    } catch (err) {
+      console.error('Emotion classification or process-emotion failed:', err)
+    }
+
+    // ✅ Step 5: Update UI (unchanged)
     reflections.value.unshift({
       text: postData.content,
       anonymous: isAnonymous.value,
