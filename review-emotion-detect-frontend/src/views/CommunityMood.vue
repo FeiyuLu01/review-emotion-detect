@@ -31,6 +31,22 @@
 
     <!-- ===== Word Cloud Visualization ===== -->
     <div ref="wordCloudRef" class="word-cloud"></div>
+
+    <!-- ===== Line Chart Selector & Preview ===== -->
+    <div class="line-chart-section">
+        <div class="chart-toggle">
+            <a-segmented
+            v-model:value="selectedChart"
+            :options="['App Data', 'Twitter Data']"
+            class="chart-switch"
+            />
+        </div>
+
+        <!-- Chart container (currently just a placeholder) -->
+        <div ref="lineChartRef" class="line-chart-box">
+            <p>📈 Line chart data preview logged in console.</p>
+        </div>
+    </div>
   </div>
 </template>
 
@@ -42,6 +58,7 @@ import cloud from 'd3-cloud'
 import axios from 'axios'
 import { sharehttp, dashboardhttp } from '@/api/http'
 import { API_BASE } from '@/utils/apiBase'
+import * as echarts from 'echarts'
 
 const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 
@@ -303,6 +320,241 @@ onMounted(async () => {
   await nextTick()
   computeMoodStats()
 })
+
+/* ---------- Line Chart Data Logic ---------- */
+const selectedChart = ref('App Data')  // current selection
+const lineChartRef = ref(null)
+
+/**
+ * Fetch chart data depending on the selected option
+ */
+async function fetchChartData() {
+  try {
+    const endpoint =
+      selectedChart.value === 'App Data'
+        ? '/dashboard/line-chart'
+        : '/dashboard/twitter-line-chart'
+
+    const resp = await dashboardhttp.get(endpoint)
+    console.log(`✅ ${selectedChart.value} data from ${endpoint}:`, resp)
+
+    if (selectedChart.value === 'App Data') {
+      renderLineChart(resp.data)
+    } else {
+      renderTwitterChart(resp.data)
+    }
+  } catch (err) {
+    console.error(`❌ Failed to fetch ${selectedChart.value} data:`, err)
+  }
+}
+
+/**
+ * Render App Data line chart with animation and gradient
+ */
+function renderLineChart(data) {
+  if (!lineChartRef.value) return
+
+  const chart = echarts.init(lineChartRef.value)
+  const option = {
+    backgroundColor: 'transparent',
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(50,50,50,0.8)',
+      borderColor: '#777',
+      textStyle: { color: '#fff' },
+    },
+    legend: {
+      data: ['Positive', 'Neutral', 'Negative'],
+      textStyle: { color: '#fff', fontSize: 13 },
+      top: 10,
+    },
+    grid: {
+      left: '5%',
+      right: '5%',
+      bottom: '10%',
+      top: '15%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: data.date || [],
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: '#aaa' } },
+      axisLabel: { color: '#ddd' },
+    },
+    yAxis: {
+      type: 'value',
+      name: 'Count',
+      nameTextStyle: { color: '#ddd' },
+      axisLine: { lineStyle: { color: '#aaa' } },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
+      axisLabel: { color: '#ccc' },
+    },
+    series: [
+      {
+        name: 'Positive',
+        type: 'line',
+        smooth: true,
+        data: data.positive || [],
+        lineStyle: { color: '#4ade80', width: 3 },
+        itemStyle: { color: '#4ade80' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(74,222,128,0.4)' },
+            { offset: 1, color: 'rgba(74,222,128,0)' },
+          ]),
+        },
+      },
+      {
+        name: 'Neutral',
+        type: 'line',
+        smooth: true,
+        data: data.neutral || [],
+        lineStyle: { color: '#9ca3af', width: 3 },
+        itemStyle: { color: '#9ca3af' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(156,163,175,0.4)' },
+            { offset: 1, color: 'rgba(156,163,175,0)' },
+          ]),
+        },
+      },
+      {
+        name: 'Negative',
+        type: 'line',
+        smooth: true,
+        data: data.negative || [],
+        lineStyle: { color: '#f87171', width: 3 },
+        itemStyle: { color: '#f87171' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(248,113,113,0.4)' },
+            { offset: 1, color: 'rgba(248,113,113,0)' },
+          ]),
+        },
+      },
+    ],
+    animationDuration: 1200,
+    animationEasing: 'cubicOut',
+  }
+
+  chart.setOption(option)
+
+  // handle resize
+  window.addEventListener('resize', () => {
+    chart.resize()
+  })
+}
+
+/**
+ * Render Twitter Data line chart with animation and gradient
+ */
+function renderTwitterChart(data) {
+  if (!lineChartRef.value) return
+  const chart = echarts.init(lineChartRef.value)
+
+  const option = {
+    backgroundColor: 'transparent',
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(30,30,30,0.85)',
+      borderColor: '#444',
+      textStyle: { color: '#fff' },
+    },
+    legend: {
+      data: ['Positive', 'Neutral', 'Negative'],
+      textStyle: { color: '#fff', fontSize: 13 },
+      top: 10,
+    },
+    grid: {
+      left: '5%',
+      right: '5%',
+      bottom: '10%',
+      top: '15%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: data.date || [],
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: '#aaa' } },
+      axisLabel: { color: '#ddd' },
+    },
+    yAxis: {
+      type: 'value',
+      name: 'Count',
+      nameTextStyle: { color: '#ddd' },
+      axisLine: { lineStyle: { color: '#aaa' } },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
+      axisLabel: { color: '#ccc' },
+    },
+    series: [
+      {
+        name: 'Positive',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        data: data.positive || [],
+        lineStyle: { color: '#22d3ee', width: 3 },
+        itemStyle: { color: '#22d3ee' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(34,211,238,0.4)' },
+            { offset: 1, color: 'rgba(34,211,238,0)' },
+          ]),
+        },
+      },
+      {
+        name: 'Neutral',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        data: data.neutral || [],
+        lineStyle: { color: '#cbd5e1', width: 3 },
+        itemStyle: { color: '#cbd5e1' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(203,213,225,0.4)' },
+            { offset: 1, color: 'rgba(203,213,225,0)' },
+          ]),
+        },
+      },
+      {
+        name: 'Negative',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        data: data.negative || [],
+        lineStyle: { color: '#f43f5e', width: 3 },
+        itemStyle: { color: '#f43f5e' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(244,63,94,0.4)' },
+            { offset: 1, color: 'rgba(244,63,94,0)' },
+          ]),
+        },
+      },
+    ],
+    animationDuration: 1200,
+    animationEasing: 'cubicOut',
+  }
+
+  chart.setOption(option)
+  window.addEventListener('resize', () => chart.resize())
+}
+
+// watch selection changes
+watch(selectedChart, () => {
+  fetchChartData()
+})
+
+// initial fetch
+onMounted(() => {
+  fetchChartData()
+})
 </script>
 
 <style scoped>
@@ -391,4 +643,25 @@ overflow: hidden;
   margin-top: 40px;
 }
 
+.line-chart-section {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.chart-toggle {
+  margin-bottom: 16px;
+}
+
+.line-chart-box {
+  height: 360px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ddd;
+  font-size: 1rem;
+}
 </style>

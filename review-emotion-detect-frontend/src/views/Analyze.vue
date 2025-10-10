@@ -13,16 +13,16 @@
       <div id="section-input-anchor"></div>
       <!-- S1: Input (visible before Analyze; auto hidden when loading or results exist) -->
       <section id="section-input" class="stage-card" data-stage="input" v-show="!loading || hasScores">
-        <div class="prethink-tip" role="note" aria-live="polite">
+        <!-- <div class="prethink-tip" role="note" aria-live="polite">
           <a-alert type="warning" show-icon banner :message="prethinkMsg" />
-        </div>
+        </div> -->
 
         <a-card class="card input-card" :bordered="false">
           <a-typography-title :level="3" class="hero-gradient-title" style="margin:0 0 6px 0;">
-            Analyze a Review
+            Analyse a Review
           </a-typography-title>
           <a-typography-text type="secondary">
-            Paste any review or short text below. We will analyze its emotions using an AI model.
+            Paste any review or short text below. For example, you can copy a review from any social media like YouTube and paste below. We will analyse its emotions.
           </a-typography-text>
 
           <a-textarea
@@ -34,7 +34,7 @@
 
           <div class="actions">
             <a-button type="primary" size="large" :loading="loading" :disabled="!text.trim()" @click="analyze">
-              Analyze
+              Analyse
             </a-button>
             <a-button size="large" :disabled="loading" @click="reset">Clear</a-button>
           </div>
@@ -92,12 +92,11 @@
         </a-card>
       </section>
 
-      
 
       <!-- S4: Scientific Evidence (reveals when scrolled into view; user-controlled) -->
       <section id="section-evidence" class="stage-card" data-stage="evidence">
-        <a-card class="card insights-card" :bordered="false">
-          <a-typography-title :level="4" style="margin:0 0 12px 0;">
+        <a-card class="card insights-card " :bordered="false">
+          <a-typography-title class="hero-gradient-title" :level="4" style="margin:0 0 12px 0;">
             How does the review emotion affect you?
           </a-typography-title>
 
@@ -147,7 +146,7 @@
       <!-- S5: Rewrite (reveals when scrolled into view; user-controlled) -->
       <section id="section-rewrite" class="stage-card" data-stage="rewrite">
         <a-card class="card inside-card" :bordered="false">
-          <a-typography-title :level="4" style="margin:0 0 12px 0;">Rewrite your review</a-typography-title>
+          <a-typography-title class="hero-gradient-title" :level="4" style="margin:0 0 12px 0;">Rewrite your review</a-typography-title>
           <a-typography-text type="secondary">
             Adjust tone & clarity based on analysis.
           </a-typography-text>
