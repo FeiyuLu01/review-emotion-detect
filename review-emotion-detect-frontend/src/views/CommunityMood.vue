@@ -2,7 +2,8 @@
   <div class="mood-dashboard" ref="dashboardRef">
     <div class="mood-header">
       <h2 class="dashboard-title">
-        {{ formattedTitle }} 🌈
+        {{ formattedTitle }} 
+        <span class="emoji">🌈</span>
       </h2>
       <a-segmented
         v-model:value="selectedPeriod"
@@ -326,6 +327,19 @@ background: linear-gradient(90deg, #ff7ee5, #84fab0);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 }
+
+.dashboard-title .emoji {
+  -webkit-text-fill-color: initial; /* restore emoji native color */
+  background: none; /* remove gradient */
+  display: inline-block;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5)); /* optional glow */
+  animation: floatRainbow 3s ease-in-out infinite alternate;
+}
+
+@keyframes floatRainbow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
 .period-switch {
 font-size: 0.9rem;
 }
@@ -374,6 +388,7 @@ overflow: hidden;
   letter-spacing: 0.3px;
   text-shadow: 0 0 10px rgba(255,255,255,0.3);
   transition: color 0.6s ease;
+  margin-top: 40px;
 }
 
 </style>
