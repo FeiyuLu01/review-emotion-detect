@@ -39,7 +39,7 @@
 
     <!-- ===== Content Switcher ===== -->
     <transition name="fade" mode="out-in">
-      <div v-if="activeTab === 'reflection'" key="reflection">
+      <div v-if="activeTab === 'reflection'" key="reflection" class="sharewidth">
         <!-- ===== Input Section ===== -->
         <div class="share-container" ref="formRef">
           <a-card class="share-card" :bordered="false">
@@ -51,7 +51,7 @@
 
             <!-- ===== Color Picker Section ===== -->
             <div class="color-picker">
-              <span class="label">Choose your emotion color:</span>
+              <span class="label">Choose your word color:</span>
               <div class="color-options">
                 <div
                   v-for="(color, i) in emotionColors"
@@ -657,9 +657,10 @@ function hexToRgb(hex) {
 /* Form Section */
 .share-container {
   margin: 60px auto 0 auto;
-  width: 90%;
-  max-width: 640px;
+  width: 92%;             
+  max-width: 780px;      
 }
+
 
 .share-card {
   backdrop-filter: blur(12px);
@@ -1014,5 +1015,12 @@ function hexToRgb(hex) {
 .toggle-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.sharewidth {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
 }
 </style>
