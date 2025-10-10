@@ -42,7 +42,6 @@ import axios from 'axios'
 import { sharehttp, dashboardhttp } from '@/api/http'
 import { API_BASE } from '@/utils/apiBase'
 
-// 分类接口 URL
 const CLASSIFY_URL = `${API_BASE}/gemini-classify`
 
 const selectedPeriod = ref('weekly')
@@ -55,7 +54,6 @@ const moodStats = ref([
 ])
 
 const keywordData = ref({})
-
 const wordCloudRef = ref(null)
 
 const formattedTitle = computed(() => {
@@ -67,6 +65,18 @@ const formattedTitle = computed(() => {
   }
 })
 
+/* ---------- Tone buckets ---------- */
+const POSITIVE = [
+  'admiration','amusement','approval','caring','curiosity','excitement',
+  'gratitude','joy','love','optimism','pride','realization','relief'
+]
+const NEGATIVE = [
+  'anger','annoyance','disappointment','disapproval','disgust',
+  'embarrassment','fear','grief','nervousness','remorse','sadness'
+]
+const NEUTRAL = ['neutral']
+
+/* ---------- Fetch all reflections ---------- */
 async function fetchAllReflections() {
   try {
     const posts = await sharehttp.get('/posts/get-all')
@@ -77,25 +87,33 @@ async function fetchAllReflections() {
   }
 }
 
+/* ---------- Classify one text ---------- */
 async function classifyText(text) {
   try {
-    console.log('start classify', text)
     const resp = await axios.post(CLASSIFY_URL, { text })
-    console.log('resp from classify:', resp)
-    if (resp.data && resp.data.sentiment) return resp.data.sentiment
-    if (resp.data && resp.data.data && resp.data.data.sentiment) return resp.data.data.sentiment
-    return null
+    const results = resp.data?.results || resp.data?.data?.results
+    if (!Array.isArray(results) || results.length === 0) return 'neutral'
+
+    // find the label with the highest score
+    const top = results.reduce((a, b) => (a.score > b.score ? a : b))
+    const label = top.label?.toLowerCase() || 'neutral'
+
+    // map to tone bucket
+    if (POSITIVE.includes(label)) return 'positive'
+    if (NEGATIVE.includes(label)) return 'negative'
+    return 'neutral'
   } catch (err) {
     console.error('classifyText error', err)
-    return null
+    return 'neutral'
   }
 }
 
+/* ---------- Batch classify with concurrency ---------- */
 async function classifyBatch(texts, batchSize = 5) {
   const results = []
   for (let i = 0; i < texts.length; i += batchSize) {
     const slice = texts.slice(i, i + batchSize)
-    const promises = slice.map(t => classifyText(t).catch(() => null))
+    const promises = slice.map(t => classifyText(t).catch(() => 'neutral'))
     const res = await Promise.all(promises)
     results.push(...res)
     await new Promise(r => setTimeout(r, 200))
@@ -103,13 +121,13 @@ async function classifyBatch(texts, batchSize = 5) {
   return results
 }
 
+/* ---------- Compute mood stats ---------- */
 async function computeMoodStats() {
   console.log("computeMoodStats invoked, selectedPeriod =", selectedPeriod.value)
   const posts = await fetchAllReflections()
   console.log("Fetched posts count:", posts.length)
   if (!posts.length) {
     moodStats.value = moodStats.value.map(i => ({ ...i, value: 0 }))
-    // 清空词云
     nextTick(() => {
       if (wordCloudRef.value) wordCloudRef.value.innerHTML = ''
     })
@@ -133,7 +151,7 @@ async function computeMoodStats() {
     .map(p => (typeof p.content === 'string' ? p.content : ''))
     .filter(t => t.trim().length > 0)
 
-  // 获取关键词数据
+  // Fetch keyword stats (for word cloud)
   try {
     const resp = await dashboardhttp.get('/dashboard/sort-emotion', {
       params: { timePeriod: selectedPeriod.value }
@@ -144,19 +162,17 @@ async function computeMoodStats() {
     keywordData.value = {}
   }
 
-  // 渲染词云
+  // Render word cloud
   await nextTick()
   renderD3Cloud()
 
-  // 情绪统计
+  // Classify and aggregate tones
   const sentiments = await classifyBatch(texts, 5)
-  let pos = 0, neu = 0, neg = 0
-  sentiments.forEach(s => {
-    if (s === 'positive') pos++
-    else if (s === 'neutral') neu++
-    else if (s === 'negative') neg++
-  })
-  const total = pos + neu + neg || 1
+  const total = sentiments.length || 1
+  const pos = sentiments.filter(s => s === 'positive').length
+  const neu = sentiments.filter(s => s === 'neutral').length
+  const neg = sentiments.filter(s => s === 'negative').length
+
   moodStats.value = [
     { label: '😄 Positive', value: (pos / total) * 100, bg: 'linear-gradient(135deg,#6ee7b7,#3b82f6)' },
     { label: '😐 Neutral', value: (neu / total) * 100, bg: 'linear-gradient(135deg,#e5e7eb,#9ca3af)' },
@@ -172,6 +188,7 @@ async function computeMoodStats() {
   })
 }
 
+/* ---------- Word Cloud ---------- */
 function renderD3Cloud() {
   const container = wordCloudRef.value
   if (!container) return
@@ -180,23 +197,17 @@ function renderD3Cloud() {
   const width = container.clientWidth || 600
   const height = container.clientHeight || 400
 
-  const data = Object.entries(keywordData.value).map(([text, weight]) => {
-    return { text, weight }
-  })
+  const data = Object.entries(keywordData.value).map(([text, weight]) => ({ text, weight }))
 
   const layout = cloud()
     .size([width, height])
-    .words(data.map(d => ({
-      text: d.text,
-      size: d.weight * 5 + 20  // 这个缩放比可以调整
-    })))
+    .words(data.map(d => ({ text: d.text, size: d.weight * 5 + 20 })))
     .padding(5)
     .rotate(() => (Math.random() > 0.5 ? 0 : 90))
     .font('Impact')
     .fontSize(d => d.size)
     .spiral('archimedean')
     .on('end', draw)
-
   layout.start()
 
   function draw(words) {
@@ -204,10 +215,8 @@ function renderD3Cloud() {
       .append('svg')
       .attr('width', width)
       .attr('height', height)
-
     const g = svg.append('g')
       .attr('transform', `translate(${width / 2},${height / 2})`)
-
     const texts = g.selectAll('text')
       .data(words)
       .enter().append('text')
@@ -221,8 +230,6 @@ function renderD3Cloud() {
       .style('font-size', '0px')
       .style('opacity', 0)
       .text(d => d.text)
-
-    // 入场动画：一个接一个地显现、缩放
     texts.transition()
       .delay((d, i) => i * 30)
       .duration(800)
@@ -232,7 +239,6 @@ function renderD3Cloud() {
   }
 }
 
-// 监听周期变化
 watch(selectedPeriod, () => {
   computeMoodStats()
 })
