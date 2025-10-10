@@ -15,3 +15,4 @@ public interface QuestionnaireRepository {
      */
     List<LabeledComment> findRandomLabeledComments(int limit);
 }
+

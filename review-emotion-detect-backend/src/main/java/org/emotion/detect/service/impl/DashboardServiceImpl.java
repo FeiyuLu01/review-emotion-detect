@@ -62,10 +62,10 @@ public class DashboardServiceImpl implements DashboardService {
         List<Integer> negative = new ArrayList<>();
         List<Integer> neutral = new ArrayList<>();
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M.d");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.M.d");
         
         for (Map<String, Object> data : sentimentData) {
-            // Format date for ECharts (e.g., "9.10", "9.11")
+            // Format date for ECharts (e.g., "2024.9.10", "2024.9.11")
             java.sql.Date sqlDate = (java.sql.Date) data.get("date");
             LocalDateTime dateTime = sqlDate.toLocalDate().atStartOfDay();
             String formattedDate = dateTime.format(formatter);
@@ -93,10 +93,10 @@ public class DashboardServiceImpl implements DashboardService {
         List<Integer> negative = new ArrayList<>();
         List<Integer> neutral = new ArrayList<>();
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M.d");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.M.d");
         
         for (Map<String, Object> data : sentimentData) {
-            // Format date for ECharts (e.g., "9.10", "9.11")
+            // Format date for ECharts (e.g., "2024.9.10", "2024.9.11")
             java.sql.Date sqlDate = (java.sql.Date) data.get("date");
             LocalDateTime dateTime = sqlDate.toLocalDate().atStartOfDay();
             String formattedDate = dateTime.format(formatter);
