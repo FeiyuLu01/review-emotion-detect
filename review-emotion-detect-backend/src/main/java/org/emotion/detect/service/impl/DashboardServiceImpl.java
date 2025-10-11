@@ -82,7 +82,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public SentimentChartResponse getTwitterSentimentChartData() {
-        System.out.println("Getting twitter sentiment chart data for trend analysis");
+        System.out.println("Getting twitter sentiment chart data for yearly trend analysis");
         
         // Get all twitter sentiment chart data from repository
         List<Map<String, Object>> sentimentData = dashboardRepository.getTwitterSentimentChartData();
@@ -93,14 +93,11 @@ public class DashboardServiceImpl implements DashboardService {
         List<Integer> negative = new ArrayList<>();
         List<Integer> neutral = new ArrayList<>();
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.M.d");
-        
         for (Map<String, Object> data : sentimentData) {
-            // Format date for ECharts (e.g., "2024.9.10", "2024.9.11")
-            java.sql.Date sqlDate = (java.sql.Date) data.get("date");
-            LocalDateTime dateTime = sqlDate.toLocalDate().atStartOfDay();
-            String formattedDate = dateTime.format(formatter);
-            dates.add(formattedDate);
+            // Format year for ECharts (e.g., "2014", "2015", "2016")
+            Integer year = ((Number) data.get("date")).intValue();
+            String formattedYear = String.valueOf(year);
+            dates.add(formattedYear);
             
             // Get sentiment counts
             positive.add(((Number) data.get("positive")).intValue());
