@@ -34,3 +34,4 @@ public class DailyKeyword {
         this.recordDate = recordDate;
     }
 }
+

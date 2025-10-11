@@ -117,16 +117,16 @@ public class DashboardRepositoryImpl implements DashboardRepository {
 
     @Override
     public List<Map<String, Object>> getTwitterSentimentChartData() {
-        String sql = "SELECT DATE(publishedat) as date, " +
+        String sql = "SELECT YEAR(publishedat) as date, " +
                     "SUM(CASE WHEN sentiment = 'Positive' THEN 1 ELSE 0 END) as positive, " +
                     "SUM(CASE WHEN sentiment = 'Negative' THEN 1 ELSE 0 END) as negative, " +
                     "SUM(CASE WHEN sentiment = 'Neutral' THEN 1 ELSE 0 END) as neutral " +
                     "FROM twitter_comments_time " +
                     "WHERE countrycode = 'AU' " +
-                    "GROUP BY DATE(publishedat) " +
-                    "ORDER BY DATE(publishedat) ASC";
+                    "GROUP BY YEAR(publishedat) " +
+                    "ORDER BY YEAR(publishedat) ASC";
         
-        System.out.println("Executing twitter sentiment chart SQL (AU only): " + sql);
+        System.out.println("Executing twitter sentiment chart SQL (AU only, yearly): " + sql);
         
         List<Map<String, Object>> result = jdbcTemplate.queryForList(sql);
         System.out.println("Twitter sentiment chart query result size (AU): " + result.size());

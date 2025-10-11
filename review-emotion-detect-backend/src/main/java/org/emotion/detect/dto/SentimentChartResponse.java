@@ -9,7 +9,7 @@ import java.util.List;
  */
 @Data
 public class SentimentChartResponse {
-    /** List of dates in format suitable for ECharts (e.g., ["9.10", "9.11", "9.12"]) */
+    /** List of dates in format suitable for ECharts (e.g., ["2024.9.10", "2024.9.11", "2024.9.12"]) */
     private List<String> date;
     /** List of negative sentiment counts for each date */
     private List<Integer> negative;
@@ -40,3 +40,4 @@ public class SentimentChartResponse {
         this.neutral = neutral;
     }
 }
+

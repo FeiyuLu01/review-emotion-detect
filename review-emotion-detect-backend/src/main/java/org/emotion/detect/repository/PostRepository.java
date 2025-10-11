@@ -22,3 +22,4 @@ public interface PostRepository {
      */
     List<Post> findAll();
 }
+

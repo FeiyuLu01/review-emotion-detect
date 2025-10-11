@@ -65,3 +65,4 @@ public class PostRepositoryImpl implements PostRepository {
         return jdbcTemplate.query(sql, postRowMapper);
     }
 }
+

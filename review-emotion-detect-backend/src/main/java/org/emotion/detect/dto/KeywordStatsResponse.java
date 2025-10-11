@@ -36,3 +36,4 @@ public class KeywordStatsResponse {
         this.totalKeywords = totalKeywords;
     }
 }
+

@@ -23,3 +23,4 @@ public class EmotionRequest {
         this.emotion = emotion;
     }
 }
+
