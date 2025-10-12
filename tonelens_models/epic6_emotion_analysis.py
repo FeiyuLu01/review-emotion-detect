@@ -7,6 +7,7 @@ from google import genai
 from dotenv import load_dotenv
 from db_config import get_db_connection
 
+# Load env and config (API keys, DB creds)
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
@@ -15,38 +16,41 @@ API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise RuntimeError("Missing GEMINI_API_KEY/GOOGLE_API_KEY in .env")
 
+# Single reusable Gemini client
 client = genai.Client(api_key=API_KEY)
 
+
 class EmotionAnalyzer:
-    
+
     @staticmethod
     def extract_emojis(text: str) -> str:
         """Extract all emojis from text"""
+        # Regex over common Unicode emoji blocks; collect and join
         emoji_pattern = re.compile(
             "["
-            "\U0001F600-\U0001F64F"# Emoticons
-            "\U0001F300-\U0001F5FF"# Misc Symbols and Pictographs
-            "\U0001F680-\U0001F6FF"# Transport and Map Symbols      
-            "\U0001F1E0-\U0001F1FF"# Regional Indicator Symbols
-            "\U00002702-\U000027B0"# Dingbats
-            "\U000024C2-\U0001F251"# Enclosed Alphanumeric Supplement
-            "]+", 
+            "\U0001F600-\U0001F64F"  # Emoticons
+            "\U0001F300-\U0001F5FF"  # Misc Symbols and Pictographs
+            "\U0001F680-\U0001F6FF"  # Transport and Map Symbols      
+            "\U0001F1E0-\U0001F1FF"  # Regional Indicator Symbols
+            "\U00002702-\U000027B0"  # Dingbats
+            "\U000024C2-\U0001F251"  # Enclosed Alphanumeric Supplement
+            "]+",
             flags=re.UNICODE
         )
         emojis = emoji_pattern.findall(text)
         return ''.join(emojis)
-    
+
     @staticmethod
     def analyze_emotion(post_id: int, content: str) -> dict:
         """Analyze emotion of a single post"""
+        # 1) Cache lookup by content hash
         content_hash = hashlib.md5(content.encode()).hexdigest()
-        
         cached = EmotionAnalyzer._check_cache(content_hash)
         if cached:
             return cached
-        
+
+        # 2) Prepare emojis + strict-JSON prompt
         extracted_emojis = EmotionAnalyzer.extract_emojis(content)
-        
         prompt = f"""
 Analyze the emotional tone of this text (including any emojis). 
 Reply ONLY in JSON format:
@@ -58,36 +62,39 @@ Reply ONLY in JSON format:
 TEXT:
 {content}
         """
-        
+
         try:
+            # 3) Call Gemini (models.generate_content)
             response = client.models.generate_content(
-                                model=GEMINI_MODEL,
-                                contents=prompt
-                                )
+                model=GEMINI_MODEL,
+                contents=prompt
+            )
             raw = response.text.strip()
-            
+
+            # 4) Strip ```json fences if present
             if raw.startswith("```json"):
                 raw = raw.replace("```json", "").replace("```", "").strip()
             if raw.endswith("```"):
                 raw = raw[:-3].strip()
-            
+
+            # 5) Parse JSON, attach emojis, write cache, return
             result = json.loads(raw)
             result["emojis"] = extracted_emojis
-            
             EmotionAnalyzer._save_to_cache(post_id, content_hash, result)
-            
             return result
-            
+
         except Exception as e:
+            # Fallback: neutral + keep emojis
             print(f"[Emotion Analysis Error] {e}")
             return {
-                "emotion": "neutral", 
-                "keywords": [], 
+                "emotion": "neutral",
+                "keywords": [],
                 "emojis": extracted_emojis
             }
-    
+
     @staticmethod
     def _check_cache(content_hash: str):
+        # Read cached analysis (returns normalized dict or None)
         try:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
@@ -100,7 +107,7 @@ TEXT:
             result = cursor.fetchone()
             cursor.close()
             conn.close()
-            
+
             if result:
                 return {
                     "emotion": result["emotion_type"],
@@ -111,9 +118,10 @@ TEXT:
         except Exception as e:
             print(f"[Cache Check Error] {e}")
             return None
-    
+
     @staticmethod
     def _save_to_cache(post_id: int, content_hash: str, result: dict):
+        # Upsert the analysis result by (post_id, content_hash)
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -126,9 +134,9 @@ TEXT:
                    keywords = VALUES(keywords),
                    extracted_emojis = VALUES(extracted_emojis)""",
                 (
-                    post_id, 
-                    content_hash, 
-                    result["emotion"], 
+                    post_id,
+                    content_hash,
+                    result["emotion"],
                     json.dumps(result["keywords"], ensure_ascii=False),
                     result.get("emojis", "")
                 )
@@ -138,14 +146,14 @@ TEXT:
             conn.close()
         except Exception as e:
             print(f"[Cache Save Error] {e}")
-    
+
     @staticmethod
     def get_dashboard_data():
         """Get Epic 6 dashboard data"""
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
-        # Word cloud
+
+        # Word cloud: explode keywords JSON array and count (last 7 days)
         cursor.execute("""
             SELECT keyword, COUNT(*) as frequency
             FROM (
@@ -161,10 +169,10 @@ TEXT:
             ORDER BY frequency DESC
             LIMIT 50
         """)
-        word_cloud = [{"text": row["keyword"], "size": row["frequency"], "count": row["frequency"]} 
+        word_cloud = [{"text": row["keyword"], "size": row["frequency"], "count": row["frequency"]}
                       for row in cursor.fetchall()]
-        
-        # Top 10
+
+        # Top 10 keywords by count (same explosion)
         cursor.execute("""
             SELECT keyword, COUNT(*) as count
             FROM (
@@ -180,10 +188,10 @@ TEXT:
             ORDER BY count DESC
             LIMIT 10
         """)
-        top10 = [{"rank": i+1, "emotion": row["keyword"], "count": row["count"]} 
+        top10 = [{"rank": i + 1, "emotion": row["keyword"], "count": row["count"]}
                  for i, row in enumerate(cursor.fetchall())]
-        
-        # Trends
+
+        # Trends: daily distribution of positive/neutral/negative (percentages)
         cursor.execute("""
             SELECT 
                 DATE(ap.created_at) as date,
@@ -197,7 +205,7 @@ TEXT:
             GROUP BY DATE(ap.created_at)
             ORDER BY date
         """)
-        
+
         trends = {"labels": [], "positive": [], "neutral": [], "negative": []}
         for row in cursor.fetchall():
             trends["labels"].append(str(row["date"]))
@@ -205,19 +213,21 @@ TEXT:
             trends["positive"].append(round(row["positive"] / total * 100, 1))
             trends["neutral"].append(round(row["neutral"] / total * 100, 1))
             trends["negative"].append(round(row["negative"] / total * 100, 1))
-        
+
         cursor.close()
         conn.close()
-        
+
+        # Shape for frontend charts + simple insight
         return {
             "word_cloud": word_cloud,
             "top10_emotions": top10,
             "emotion_trends": trends,
             "insights": EmotionAnalyzer._generate_insights(trends)
         }
-    
+
     @staticmethod
     def _generate_insights(trends: dict):
+        # Simple 3-day moving average for positive share
         insights = []
         if len(trends["positive"]) >= 3:
             recent_avg = sum(trends["positive"][-3:]) / 3

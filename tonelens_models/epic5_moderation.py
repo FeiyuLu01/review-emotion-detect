@@ -4,14 +4,17 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 
+# --- load environment ---------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
+# Model and API key from env (with sensible defaults / fallbacks)
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise RuntimeError("Missing GEMINI_API_KEY/GOOGLE_API_KEY in .env")
 
+# Create Gemini client
 client = genai.Client(api_key=API_KEY)
 
 def moderate_content(text: str) -> dict:
@@ -19,6 +22,7 @@ def moderate_content(text: str) -> dict:
     Content moderation: ALLOW / BLOCK
     Checks: hate, harassment, politics, sexual, violence, PII.
     """
+    # Build a strict, deterministic moderation prompt
     prompt = f"""
 You are a content moderation system for an anonymous mood sharing platform.
 Decide if the INPUT contains ANY of the following:
@@ -37,13 +41,16 @@ INPUT:
 """.strip()
 
     try:
+        # Call Gemini to get a single-word decision
         resp = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=prompt
         )
+        # Prefer the unified .text surface; normalize to UPPER for matching
         raw = (getattr(resp, "text", "") or "").strip().upper()
-        print("[Gemini Moderation]", raw)
+        print("[Gemini Moderation]", raw)  # debug logging
 
+        # True if we see the whole word "ALLOW"
         allowed = bool(re.search(r"\bALLOW\b", raw))
         return {
             "allowed": allowed,
@@ -52,5 +59,6 @@ INPUT:
         }
 
     except Exception as e:
+        # Network/SDK/model errors: fail closed (block) with error reason
         print(f"[Moderation Error] {e}")
         return {"allowed": False, "reason": "Error during moderation"}
