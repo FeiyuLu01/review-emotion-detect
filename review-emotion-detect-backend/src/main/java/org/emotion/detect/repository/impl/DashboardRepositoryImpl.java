@@ -121,7 +121,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                     "SUM(CASE WHEN sentiment = 'Positive' THEN 1 ELSE 0 END) as positive, " +
                     "SUM(CASE WHEN sentiment = 'Negative' THEN 1 ELSE 0 END) as negative, " +
                     "SUM(CASE WHEN sentiment = 'Neutral' THEN 1 ELSE 0 END) as neutral " +
-                    "FROM twitter_comments_time " +
+                    "FROM youtube_comments_time " +
                     "WHERE countrycode = 'AU' " +
                     "GROUP BY YEAR(publishedat) " +
                     "ORDER BY YEAR(publishedat) ASC";
