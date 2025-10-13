@@ -16,11 +16,13 @@ public class QuestionnaireItem {
     /** The review text content */
     @JsonProperty("review")
     private String review;
+    /** The scenario information */
+    @JsonProperty("scenario")
+    private String scenario;
 
-    public QuestionnaireItem() {}
-
-    public QuestionnaireItem(String type, String review) {
+    public QuestionnaireItem(String type, String review, String scenario) {
         this.type = type;
         this.review = review;
+        this.scenario = scenario;
     }
 }
