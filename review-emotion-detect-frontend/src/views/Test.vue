@@ -422,6 +422,8 @@ watch(() => quiz.playing, (v) => {
     activeMode.value = mode
     try{
       const resp = await getQuestionnaire(mode)   // { status, msg, data:{ data:[{type, review}, ...] } }
+      console.log('questionnaire resp: ', resp);
+      
       const rows = resp?.data?.data || resp?.data || []
       const allTypes = Array.from(new Set(rows.map(r => r.type))).filter(Boolean)
   
@@ -648,19 +650,19 @@ watch(() => quiz.playing, (v) => {
     btn.style.setProperty('--mx', `${x}px`)
     btn.style.setProperty('--my', `${y}px`)
   }
-  function onTilt(e){
-    if (!cardRef.value) return
-    const rect = cardRef.value.getBoundingClientRect()
-    const cx = rect.left + rect.width/2
-    const cy = rect.top  + rect.height/2
-    const dx = (e.clientX - cx) / (rect.width/2)
-    const dy = (e.clientY - cy) / (rect.height/2)
-    gsap.to(cardRef.value, { rotateY: dx*6, rotateX: -dy*6, transformPerspective: 800, transformOrigin:'50% 50%', duration:.2, ease:'power2.out' })
-  }
-  function resetTilt(){
-    if (!cardRef.value) return
-    gsap.to(cardRef.value, { rotateX:0, rotateY:0, duration:.3, ease:'power2.out' })
-  }
+  // function onTilt(e){
+  //   if (!cardRef.value) return
+  //   const rect = cardRef.value.getBoundingClientRect()
+  //   const cx = rect.left + rect.width/2
+  //   const cy = rect.top  + rect.height/2
+  //   const dx = (e.clientX - cx) / (rect.width/2)
+  //   const dy = (e.clientY - cy) / (rect.height/2)
+  //   gsap.to(cardRef.value, { rotateY: dx*6, rotateX: -dy*6, transformPerspective: 800, transformOrigin:'50% 50%', duration:.2, ease:'power2.out' })
+  // }
+  // function resetTilt(){
+  //   if (!cardRef.value) return
+  //   gsap.to(cardRef.value, { rotateX:0, rotateY:0, duration:.3, ease:'power2.out' })
+  // }
 
   // ===== Title Bar Overflow Control =====
 const qWrap = ref(null)
