@@ -3,7 +3,7 @@
   <HeroAnalyze />
 
   <!-- Main grid: left flow rail + right stacked cards -->
-  <div class="analyze-main page-grid">
+  <div class="analyze-main page-grid" id="analyzeMain">
     <!-- Left: flow rail (auto highlights via activeKey; sections 4–5 highlight on scroll) -->
     <AnalyzeFlowRail :activeKey="flowKey" />
 

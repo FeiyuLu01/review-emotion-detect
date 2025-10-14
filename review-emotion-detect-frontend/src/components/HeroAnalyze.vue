@@ -38,6 +38,7 @@
   
   function scrollToMain() {
     const el = document.querySelector('#analyzeMain')
+    
     if (!el) return
     const top = (el as HTMLElement).getBoundingClientRect().top + window.scrollY - 8
     window.scrollTo({ top, behavior: 'smooth' })
