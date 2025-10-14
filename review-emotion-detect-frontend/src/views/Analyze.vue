@@ -81,7 +81,7 @@
                 @click="openDetails"
                 aria-label="See more emotion details"
               >
-                Want to see more details about emotions?
+                Detailed Insights
               </a-button>
             </div>
           </template>

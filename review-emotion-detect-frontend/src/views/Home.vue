@@ -10,8 +10,9 @@
         </h1>
         
         <p ref="subtitleRef" class="subtitle">
-          Unlock the hidden emotions in customer feedback with our advanced AI-powered sentiment analysis. 
-          Understand not just what customers say, but how they truly feel.
+          <!-- Unlock the hidden emotions in customer feedback with our advanced AI-powered sentiment analysis. 
+          Understand not just what customers say, but how they truly feel. -->
+          If you are new to social media platforms, ToneLens can teach you to read the emotional tone behind online reviews, break toxic cycles, and respond with confidence, kindness, and respect.
         </p>
       </div>
       
