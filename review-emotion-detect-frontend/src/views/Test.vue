@@ -180,7 +180,7 @@
   import HeroShowcase from '@/components/HeroShowcase.vue'
 import { getLevelFeedback } from '@/api/modules/test'
 // import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
-// try { gsap.registerPlugin(ScrollToPlugin) } catch (_) { /* 环境无此插件也没关系 */ }
+// try { gsap.registerPlugin(ScrollToPlugin) } catch (_) {  }
   import { ref, reactive, computed, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 //   import { gsap } from 'gsap'
 //   import { TextPlugin } from 'gsap/TextPlugin'

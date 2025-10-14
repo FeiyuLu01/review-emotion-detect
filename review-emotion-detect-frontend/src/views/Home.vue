@@ -25,7 +25,7 @@
             @keyup.enter="goAnalyze"
           />
           <button @click="goAnalyze" class="btn-check">
-            <span class="btn-text">Analyze Emotion</span>
+            <span class="btn-text">Analyse Emotion</span>
             <span class="btn-icon">🔍</span>
           </button>
         </div>

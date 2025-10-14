@@ -158,7 +158,7 @@
           <div class="faq-answer">
             <span class="chip chip-a">A</span>
             <div class="faq-answer-body">
-              Yes — hit <strong>“Clear”</strong> on the Analyze page. We don’t store your content after the session.
+              Yes — hit <strong>“Clear”</strong> on the Analyse page. We don’t store your content after the session.
             </div>
           </div>
         </a-collapse-panel>

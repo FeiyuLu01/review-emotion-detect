@@ -199,7 +199,7 @@
         <h3 class="explore-title">✨ Want to explore more features?</h3>
         <div class="explore-buttons">
             <a-button type="primary" class="explore-btn analyze" @click="$router.push('/analyze')">
-            🔍 Try Analyze
+            🔍 Try Analyse
             </a-button>
             <a-button type="primary" class="explore-btn test" @click="$router.push('/test')">
             🧠 Try Test Mode
