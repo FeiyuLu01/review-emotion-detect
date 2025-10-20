@@ -1,530 +1,741 @@
 <template>
-    <!-- Full-bleed carousel, flush under the sticky topbar -->
-    <section class="bleed">
-      <a-carousel
-        ref="carouselRef"
-        :autoplay="false"
-        :autoplaySpeed="4000"
-        :pauseOnHover="false"
-        :pauseOnDotsHover="false"
-        effect="fade"
-        class="ml-carousel"
-        :dots="true"
-        @afterChange="onAfterChange"
-      >
-        <!-- Slide 1 -->
-        <div>
-          <div
-            class="slide"
-            :style="bgStyle(digital01)"
-            role="img"
-            aria-label="See emotions. Spark better talk."
-          >
-            <div class="gradient"></div>
-  
-            <!-- Bottom-right caption (alternates every 2s) -->
-            <h2 class="caption caption--br">
-              <transition name="caption-fade" mode="out-in">
-                <span :key="activeCaptionIndex()">
-                  {{ slideCaptions[0][activeCaptionIndex()] }}
-                </span>
-              </transition>
-            </h2>
-  
-            <!-- CTA to About (keep your text) -->
-            <button
-              type="button"
-              class="cta"
-              @click="goAbout"
-              aria-label="Go to About page"
-            >
-              Learn more about us
-            </button>
-  
-            <!-- Image credit -->
-            <a
-              class="credit"
-              href="https://www.pexels.com/photo/modern-devices-on-stylish-brown-surface-33632612/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Image credit for slide 1 on Pexels (opens in new tab)"
-            >
-              Photo: Pexels
-            </a>
-          </div>
-        </div>
-  
-        <!-- Slide 2 -->
-        <div>
-          <div
-            class="slide"
-            :style="bgStyle(emotion02)"
-            role="img"
-            aria-label="Analyze reviews. Instant insights."
-          >
-            <div class="gradient"></div>
-  
-            <!-- Bottom-right caption (alternates every 2s) -->
-            <h2 class="caption caption--br">
-              <transition name="caption-fade" mode="out-in">
-                <span :key="activeCaptionIndex()">
-                  {{ slideCaptions[1][activeCaptionIndex()] }}
-                </span>
-              </transition>
-            </h2>
-  
-            <!-- CTA to analyze (keep your text) -->
-            <button
-              type="button"
-              class="cta"
-              @click="goAnalyze"
-              aria-label="Go to Analyze page"
-            >
-              What emotions in the review?
-            </button>
-  
-            <!-- Image credit -->
-            <a
-              class="credit"
-              href="https://www.pexels.com/photo/two-yellow-emoji-on-yellow-case-207983/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Image credit for slide 2 on Pexels (opens in new tab)"
-            >
-              Photo: Pexels
-            </a>
-          </div>
-        </div>
-      </a-carousel>
-  
-      <!-- Centered side arrows -->
-      <button
-        class="nav-btn nav-btn--left"
-        aria-label="Previous slide"
-        type="button"
-        @click="prevSlide"
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-  
-      <button
-        class="nav-btn nav-btn--right"
-        aria-label="Next slide"
-        type="button"
-        @click="nextSlide"
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </section>
-
-    <!-- Divider -->
-    <hr class="divider" />
-  
-    <!-- ===================== Site Intro Section ===================== -->
-    <section class="intro container">
-      <div class="intro__grid2">
-        <!-- Left: text + cards -->
-        <div class="intro__left">
-          <div class="intro__head">
-            <h2 class="intro__title">What is MoodLens?</h2>
-            <p class="intro__subtitle">
-              MoodLens helps you understand the emotions inside any review — turning raw text into actionable, human-centered insights for healthier online discourse.
-            </p>
-          </div>
-  
-          <!-- Single-column vertical stack -->
-          <div class="intro__grid">
-            <div class="card fade-up" style="--d:0ms">
-              <div class="card__icon">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="card__body">
-                <h3 class="card__title">Quick & clear</h3>
-                <p class="card__text">Paste a review and get an emotion breakdown in seconds with a clean, readable report.</p>
-              </div>
-            </div>
-  
-            <div class="card fade-up" style="--d:80ms">
-              <div class="card__icon">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M12 3l9 5-9 5-9-5 9-5zm0 7l9 5-9 5-9-5 9-5z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="card__body">
-                <h3 class="card__title">Rich emotions</h3>
-                <p class="card__text">Detect a wide range of emotions and tones to understand sentiment beyond positive or negative.</p>
-              </div>
-            </div>
-  
-            <div class="card fade-up" style="--d:160ms">
-              <div class="card__icon">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="card__body">
-                <h3 class="card__title">Respect & safety</h3>
-                <p class="card__text">Designed to encourage constructive dialogue and digital citizenship in every interaction.</p>
-              </div>
-            </div>
-          </div>
-  
-          <div class="intro__cta">
-            <a class="intro__btn" @click.prevent="goAbout" href="/analyze">
-              Want to learn more about us?
-            </a>
-          </div>
-        </div>
-  
-        <!-- Right: illustration -->
-        <div class="intro__right">
-          <img
-            src="@/assets/digital03.jpg"
-            alt="Person holding smartphone (Unsplash)"
-            class="intro__image"
+  <div class="home-container">
+    <div class="main-content">
+      <!-- 左侧内容区 -->
+      <div class="left-section">
+      <div class="hero-content">
+        <h1 ref="titleRef" class="title">
+          <span class="title-main">Discover the Emotion</span>
+          <span class="title-sub">Behind Every Review</span>
+        </h1>
+        
+        <p ref="subtitleRef" class="subtitle">
+          <!-- Unlock the hidden emotions in customer feedback with our advanced AI-powered sentiment analysis. 
+          Understand not just what customers say, but how they truly feel. -->
+          If you are new to social media platforms, ToneLens can teach you to read the emotional tone behind online reviews, break toxic cycles, and respond with confidence, kindness, and respect.
+        </p>
+      </div>
+      
+      <div ref="searchRef" class="search-area">
+        <div class="input-wrapper">
+          <input 
+            v-model="demo" 
+            type="text" 
+            placeholder="Paste your review or comment here..."
+            class="input-field"
+            @keyup.enter="goAnalyze"
           />
-          <a
-            class="credit credit--img"
-            href="https://unsplash.com/photos/person-holding-smartphone-0VGG7cqTwCo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Photo: Unsplash
-          </a>
+          <button @click="goAnalyze" class="btn-check">
+            <span class="btn-text">Analyse Emotion</span>
+            <span class="btn-icon">🔍</span>
+          </button>
+        </div>
+        
+        <div class="example">
+          <span class="example-text">💡 Try it out with examples like:</span>
+          <div class="example-quotes">
+            <span class="example-quote">"You don't know what you're talking about!"</span>
+            <span class="example-quote">"Absolutely love this product! Best purchase ever!"</span>
+            <span class="example-quote">"The service was okay, nothing special though."</span>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Divider -->
-    <hr class="divider" />
-  
-    <!-- ===================== Core Feature Section ===================== -->
-    <section class="feature container">
-      <div class="feature__grid">
-        <!-- Left: illustration -->
-        <div class="feature__image">
-          <img src="@/assets/emotion01.jpg" alt="Emotion analysis illustration" />
-          <!-- Pexels credit (this is the one you want to shorten) -->
-          <a
-            class="credit credit--feature"
-            href="https://www.pexels.com/photo/yellow-cube-on-brown-pavement-208147/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Photo: Pexels
-          </a>
+    <!-- 右侧插图区 -->
+    <div class="right-section">
+      <div class="illustration">
+        <!-- 小男孩图片 -->
+        <div class="character-image">
+          <div class="image-container">
+            <img src="/src/assets/Home1.png" alt="little boy" class="boy-image" />
+          </div>
         </div>
-  
-        <!-- Right: concise content + preview -->
-        <div class="feature__content">
-            <div class="feature__head feature__head--center">
-                <h2 class="feature__title">Analyze a review, clearly</h2>
-                <p class="feature__subtitle">
-                Type or paste a review. We leverage the Hugging Face model
-                <span class="mono">SamLowe/roberta-base-go_emotions</span>
-                to estimate emotion probabilities, visualize them with ECharts,
-                and generate a readable report.
-                </p>
-            </div>
-
-            <!-- Steps: now 3 equal columns that fill the row -->
-            <ul class="badges badges--equal">
-                <li class="badge"><span class="dot">1</span>Input text</li>
-                <li class="badge"><span class="dot">2</span>Detect emotions</li>
-                <li class="badge"><span class="dot">3</span>Chart & report</li>
-            </ul>
-
-            <FeaturePreview />
+        
+        <!-- 表情气泡 -->
+        <div class="emotion-bubble sad-bubble">
+          <span class="bubble-emoji">😞</span>
+          <span class="bubble-label">Sad</span>
         </div>
+        <div class="emotion-bubble angry-bubble">
+          <span class="bubble-emoji">👎</span>
+          <span class="bubble-label">Angry</span>
+        </div>
+        
+        <!-- 新增正面情绪气泡 -->
+        <div class="emotion-bubble happy-bubble">
+          <span class="bubble-emoji">😊</span>
+          <span class="bubble-label">Happy</span>
+        </div>
+        <div class="emotion-bubble neutral-bubble">
+          <span class="bubble-emoji">😐</span>
+          <span class="bubble-label">Neutral</span>
+        </div>
+        
+        <!-- 背景装饰元素 -->
+        <div class="bg-decoration circle-1"></div>
+        <div class="bg-decoration circle-2"></div>
+        <div class="bg-decoration circle-3">        </div>
       </div>
-    </section>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted, onBeforeUnmount } from 'vue'
-  import { useRouter } from 'vue-router'
-  import digital01 from '@/assets/digital01.jpg'
-  import emotion02 from '@/assets/emotion02.jpg'
-  import FeaturePreview from '@/components/home/FeaturePreview.vue'
-  
-  function bgStyle(src) { return { backgroundImage: `url(${src})` } }
-  
-  const router = useRouter()
-  function goAnalyze() { router.push('/analyze') }
-  function goAbout()   { router.push('/about') }
-  
-  const carouselRef = ref(null)
-  function nextSlide() { carouselRef.value?.next?.() }
-  function prevSlide() { carouselRef.value?.prev?.() }
-  
-  const captionTick = ref(0)
-  const slideCaptions = [
-    ['See emotions. Spark better talk.', 'Foster digital citizenship.'],
-    ['Analyze reviews. Instant insights.', 'Understand tone, write kindly.']
-  ]
-  function activeCaptionIndex() { return captionTick.value % 2 }
-  function onAfterChange() {}
-  
-  let slideTimer = null
-  let captionTimer = null
-  onMounted(() => {
-    slideTimer = setInterval(() => nextSlide(), 4000)
-    captionTimer = setInterval(() => { captionTick.value = (captionTick.value + 1) % 2 }, 2000)
-  })
-  onBeforeUnmount(() => {
-    if (slideTimer) clearInterval(slideTimer)
-    if (captionTimer) clearInterval(captionTimer)
-  })
-  </script>
-  
-  <style scoped>
-  /* ===================== Full-bleed container ===================== */
-  .bleed {
-    position: relative;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
-    margin-top: -32px;
-  }
-  
-  /* ===================== Carousel & slides ===================== */
-  .ml-carousel { border-radius: 0; }
-  .slide {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 72px + 32px);
-    min-height: 60vh;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-  }
-  .gradient {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.06) 35%, rgba(0,0,0,.30) 100%);
-  }
-  
-  /* ===================== Caption ===================== */
-  .caption {
-    position: absolute;
-    margin: 0;
-    color: #fff;
-    font-weight: 900;
-    letter-spacing: .2px;
-    line-height: 1.1;
-    font-size: clamp(20px, 3.6vw, 44px);
-    text-shadow: 0 2px 6px rgba(0,0,0,.55);
-    animation: rise .8s ease-out both;
-  }
-  .caption--br {
-    right: max(24px, 3vw);
-    bottom: calc(max(24px, 4vh) + 150px);
-    text-align: right;
-  }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(18px) scale(.98); }
-    to   { opacity: 1; transform: translateY(6px)  scale(1); }
-  }
-  :deep(.ant-carousel .slick-slide) { transition: opacity .6s ease; }
-  
-  /* ===================== Side arrow buttons ===================== */
-  .nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 5;
-    width: 42px; height: 42px;
-    border: none; border-radius: 50%;
-    display: grid; place-items: center;
-    cursor: pointer; color: #fff;
-    background: rgba(15,23,42,.28);
-    backdrop-filter: blur(6px) saturate(140%);
-    box-shadow: 0 6px 18px rgba(2,6,23,.25), inset 0 0 0 1px rgba(255,255,255,.18);
-    transition: transform .15s ease, background .15s ease, box-shadow .15s ease, opacity .2s;
-    opacity: .92;
-  }
-  .nav-btn:hover { transform: translateY(-50%) scale(1.06); background: rgba(15,23,42,.38); }
-  .nav-btn:active { transform: translateY(-50%) scale(0.98); }
-  .nav-btn--left  { left: 24px; }
-  .nav-btn--right { right: 24px; }
-  .nav-btn:focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
-  
-  /* ===================== Carousel dots ===================== */
-  :deep(.ant-carousel .slick-dots) { bottom: 18px; }
-  :deep(.ant-carousel .slick-dots li) { width: 32px; height: 4px; margin: 0 10px; border-radius: 2px; }
-  :deep(.ant-carousel .slick-dots li button) {
-    width: 100%; height: 100%; border-radius: inherit;
-    background: rgba(255,255,255,0.55); opacity: 1;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.18);
-    transition: background .25s ease, box-shadow .25s ease, transform .25s ease;
-  }
-  :deep(.ant-carousel .slick-dots li.slick-active button) {
-    background: linear-gradient(90deg, #7C3AED, #06B6D4);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.18), 0 4px 10px rgba(0,0,0,0.25);
-  }
-  :deep(.ant-carousel .slick-dots li:hover button) { transform: translateY(-1px); }
-  
-  /* ===================== Caption switch animations ===================== */
-  .caption-fade-enter-active,
-  .caption-fade-leave-active { transition: opacity .38s ease, transform .38s ease; }
-  .caption-fade-enter-from,
-  .caption-fade-leave-to { opacity: 0; transform: translateY(6px); }
-  
-  /* ===================== Credit badge (slides) ===================== */
-  .credit {
-    position: absolute;
-    left: max(16px, 2vw);
-    bottom: max(16px, 2vh);
-    z-index: 4;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    font-size: 12px;
-    line-height: 1;
-    color: #e6f0ff;
-    text-decoration: none;
-    border-radius: 999px;
-    background: rgba(15, 23, 42, .38);
-    backdrop-filter: blur(6px) saturate(140%);
-    box-shadow: 0 4px 12px rgba(2,6,23,.25), inset 0 0 0 1px rgba(255,255,255,.15);
-    transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
-  }
-  .credit:hover { transform: translateY(-1px); background: rgba(15, 23, 42, .48); }
-  
-  /* ===================== CTA (slides) ===================== */
-  .cta {
-    position: absolute;
-    right: max(24px, 3vw);
-    bottom: max(24px, 4vh);
-    z-index: 5;
-    padding: 10px 16px;
-    border: 0; border-radius: 999px; cursor: pointer;
-    font-weight: 700; font-size: clamp(14px, 1.4vw, 16px); color: #fff;
-    background: linear-gradient(90deg, #7C3AED, #06B6D4);
-    box-shadow: 0 8px 22px rgba(16, 24, 40, 0.25);
-    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-  }
-  .cta:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(16,24,40,.3); filter: brightness(1.05); }
-  .cta:active { transform: translateY(0); box-shadow: 0 6px 16px rgba(16,24,40,.22); }
-  .cta:focus-visible { outline: 3px solid rgba(124,58,237,.45); outline-offset: 2px; }
-  
-  /* ===================== Intro section ===================== */
-  .intro { padding: 56px 0 28px 0; }
-  .intro__grid2 {
-    display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center;
-  }
-  @media (min-width: 992px) {
-    .intro__grid2 { grid-template-columns: 1fr 1fr; }
-  }
-  .intro__left { display: flex; flex-direction: column; }
-  .intro__head { text-align: center; margin-bottom: 24px; }
-  .intro__title { margin: 0 0 8px 0; font-size: clamp(22px, 3.2vw, 32px); font-weight: 900; letter-spacing: .2px; color: #0f172a; }
-  .intro__subtitle { margin: 0 auto; max-width: 820px; color: #475569; font-size: clamp(14px, 1.6vw, 16px); }
-  
-  /* Cards: vertical stack */
-  .intro__grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 16px; }
-  .card { display: flex; gap: 12px; padding: 16px 18px; border-radius: 16px; background: rgba(255,255,255,.7); backdrop-filter: blur(8px) saturate(140%); box-shadow: 0 8px 24px rgba(2,6,23,.06), 0 1px 0 rgba(2,6,23,.06) inset; transition: transform .18s ease, box-shadow .18s ease; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(2,6,23,.10); }
-  .card__icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: #6d28d9; background: rgba(124,58,237,.12); }
-  .card__title { margin: 0 0 6px 0; font-weight: 800; color: #0f172a; }
-  .card__text  { margin: 0; color: #475569; }
-  
-  .intro__cta { margin-top: 20px; display: flex; justify-content: center; }
-  .intro__btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: 999px; font-weight: 700; color: #fff; background: linear-gradient(90deg, #7C3AED, #06B6D4); text-decoration: none; box-shadow: 0 8px 22px rgba(16,24,40,.2); transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
-  .intro__btn:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(16,24,40,.28); filter: brightness(1.05); }
-  
-  /* Right image + credit */
-  .intro__right { position: relative; display: flex; justify-content: center; }
-  .intro__image { width: 100%; max-width: 560px; border-radius: 24px; box-shadow: 0 18px 40px rgba(2,6,23,.18); }
-  /* keep it short & right-aligned */
-  .credit--img { position: absolute; left: auto; right: 12px; bottom: 12px; font-size: 11px; padding: 4px 8px; background: rgba(0,0,0,0.45); border-radius: 8px; color: #fff; }
-  .credit--img:hover { background: rgba(0,0,0,0.6); }
-  
-  /* Entrance animation for intro cards */
-  .fade-up { opacity: 0; transform: translateY(8px); animation: fadeUp .5s ease forwards; animation-delay: var(--d,0ms); }
-  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-  
-  /* ===================== Core Feature Section ===================== */
-  .feature { padding: 44px 0 16px 0; }
-  .feature__grid { display: grid; grid-template-columns: 1fr; gap: 26px; align-items: center; }
-  @media (min-width: 992px) { .feature__grid { grid-template-columns: 1fr 1.25fr; } }
-  .feature__image { position: relative; }
-  .feature__image img { width: 100%; border-radius: 20px; box-shadow: 0 12px 32px rgba(2,6,23,.1); object-fit: cover; }
-  .feature__content { display: flex; flex-direction: column; gap: 14px; }
-  /* .feature__title { margin: 0; font-weight: 900; font-size: clamp(22px, 3.2vw, 32px); color: #0f172a; } */
-  .feature__title {
-    margin: 0 0 16px 0; /* <-- was 8px */
-    font-size: clamp(22px, 3.2vw, 32px);
-    font-weight: 900;
-    color: #0f172a;
-  }
-  .feature__subtitle { margin: 0; color: #475569; }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-  
-  /* badges row */
-  .badges { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 6px 0; }
-  .badge  { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(124,58,237,.08); color: #3b0764; font-weight: 700; }
-  .badge .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(90deg,#7C3AED,#06B6D4); font-size: 12px; font-weight: 800; }
-  
-  /* >>> FIX: make feature credit short (override .credit left) */
-  .credit--feature {
-    position: absolute;
-    left: auto;          /* <-- key line to cancel base .credit left */
-    right: 12px;
-    bottom: 12px;
-    font-size: 11px;
-    padding: 4px 8px;
-    display: inline-flex;
-    width: auto;
-    white-space: nowrap;
-    background: rgba(0,0,0,0.45);
-    border-radius: 8px;
-    color: #fff;
-    text-decoration: none;
-    transition: background .15s ease;
-  }
-  .credit--feature:hover { background: rgba(0,0,0,0.6); }
+    </div>
+    </div>
+  </div>
+</template>
 
-  /* Center the heading block inside the right column */
-.feature__head--center { 
-  text-align: center;               /* center heading */
-  margin-left: auto; 
-  margin-right: auto; 
-  max-width: 900px;
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { gsap } from 'gsap'
+
+const router = useRouter()
+const demo = ref('')
+const titleRef = ref(null)
+const subtitleRef = ref(null)
+const searchRef = ref(null)
+
+
+function goAnalyze() { 
+  const q = demo.value.replace(/\s+/g, ' ').trim()
+  if (q) {
+    router.push({ path: '/analyze', query: { q }, hash: '#section-results-anchor' })
+  }
 }
 
-/* Make the 3 badges fill the entire row evenly */
-.badges--equal {
+function handleExampleClick(quote) {
+  demo.value = quote.replace(/"/g, '')
+}
+
+onMounted(() => {
+  // 增强的进入动画
+  const tl = gsap.timeline({ defaults: { ease: 'power2.out' } })
+  tl.from(titleRef.value, { y: 40, opacity: 0, duration: 1 })
+    .from(subtitleRef.value, { y: 20, opacity: 0, duration: 0.8 }, '-=0.6')
+    .from(searchRef.value, { y: 20, opacity: 0, duration: 0.6 }, '-=0.4')
+
+  // 表情气泡的浮动动画
+  gsap.to('.sad-bubble', { 
+    y: -8, 
+    duration: 2, 
+    repeat: -1, 
+    yoyo: true, 
+    ease: 'sine.inOut' 
+  })
+  
+  gsap.to('.angry-bubble', { 
+    y: -6, 
+    duration: 2.5, 
+    repeat: -1, 
+    yoyo: true, 
+    ease: 'sine.inOut',
+    delay: 0.5
+  })
+
+  gsap.to('.happy-bubble', { 
+    y: -10, 
+    duration: 2.2, 
+    repeat: -1, 
+    yoyo: true, 
+    ease: 'sine.inOut',
+    delay: 1
+  })
+
+  gsap.to('.neutral-bubble', { 
+    y: -7, 
+    duration: 2.8, 
+    repeat: -1, 
+    yoyo: true, 
+    ease: 'sine.inOut',
+    delay: 0.8
+  })
+
+  // 为示例添加点击事件
+  const exampleQuotes = document.querySelectorAll('.example-quote')
+  exampleQuotes.forEach(quote => {
+    quote.addEventListener('click', () => {
+      handleExampleClick(quote.textContent)
+      goAnalyze()
+    })
+  })
+
+  // 功能卡片的进入动画
+  const featureCards = document.querySelectorAll('.feature-card')
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        gsap.fromTo(entry.target, 
+          { y: 50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, delay: index * 0.2, ease: 'power2.out' }
+        )
+        observer.unobserve(entry.target)
+      }
+    })
+  }, { threshold: 0.1 })
+  
+  featureCards.forEach(card => observer.observe(card))
+})
+</script>
+
+<style scoped>
+/* 主容器 */
+.home-container {
+  height: 100%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* 主要内容区域 */
+.main-content {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);   /* 3 equal columns */
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: center;
+}
+
+/* 左侧内容区 */
+.left-section {
+  padding: 50px 60px;
+  color: white;
+}
+
+/* 右侧插图区 */
+.right-section {
+  padding: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.hero-content {
+  margin-bottom: 50px;
+}
+
+.title {
+  font-size: clamp(2.8rem, 5.5vw, 4rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.title-main {
+  display: block;
+  color: white;
+}
+
+.title-sub {
+  display: block;
+  color: #fbbf24;
+  font-size: 0.85em;
+  margin-top: 8px;
+}
+
+.subtitle {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-bottom: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+}
+
+.search-area {
+  max-width: 500px;
+}
+
+.input-wrapper {
+  display: flex;
   gap: 12px;
-  width: 100%;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-bottom: 20px;
 }
 
-.badge {
-  width: 100%;
-  justify-content: center;                
-  text-align: center;
-  padding: 10px 14px;                   
-}
-
-/* Divider line between sections */
-.divider {
+.input-field {
+  flex: 1;
+  padding: 16px 20px;
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.08); /* subtle line */
-  margin: 40px auto; /* space above & below */
-  max-width: 960px;  /* keep line not too wide */
+  border-radius: 12px;
+  font-size: 16px;
+  background: white;
+  color: #1f2937;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s ease;
 }
-  </style>
+
+.input-field:focus {
+  outline: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.input-field::placeholder {
+  color: #9ca3af;
+}
+
+.btn-check {
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-check:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+}
+
+.btn-check:active {
+  transform: translateY(0);
+}
+
+.btn-text {
+  z-index: 1;
+}
+
+.btn-icon {
+  font-size: 18px;
+  z-index: 1;
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.example-text {
+  font-size: 16px;
+  color: #e2e8f0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+}
+
+.example-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.example-quote {
+  font-size: 15px;
+  color: white;
+  font-style: italic;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #fbbf24;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.example-quote:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+/* 右侧插图区 */
+.right-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.illustration {
+  position: relative;
+  width: 380px;
+  height: 450px;
+}
+
+.character-image {
+  position: relative;
+  width: 280px;
+  height: 350px;
+  margin: 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
+    linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border-radius: 50%;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 添加微妙的边框光晕 */
+  box-shadow: 
+    inset 0 0 30px rgba(255, 255, 255, 0.1),
+    0 0 40px rgba(255, 255, 255, 0.05);
+  /* 添加背景混合模式 */
+  background-blend-mode: overlay, normal;
+}
+
+.boy-image {
+  width: 180%;
+  height: 180%;
+  object-fit: contain;
+  /* 尝试使用混合模式 */
+  mix-blend-mode: normal;
+  margin-top: 80px;
+  border-radius: 30px;
+}
+
+/* 表情气泡 */
+.emotion-bubble {
+  position: absolute;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.emotion-bubble:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+.bubble-emoji {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.bubble-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.sad-bubble {
+  top: 20px;
+  right: 20px;
+  width: 75px;
+  height: 85px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.angry-bubble {
+  top: 60px;
+  left: 15px;
+  width: 65px;
+  height: 75px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.happy-bubble {
+  top: 160px;
+  right: 10px;
+  width: 70px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.neutral-bubble {
+  bottom: -10px;
+  left: 25px;
+  width: 65px;
+  height: 75px;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+/* 背景装饰元素 */
+.bg-decoration {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.circle-1 {
+  top: -8%;
+  left: 0%;
+  width: 100px;
+  height: 100px;
+  animation: float 6s ease-in-out infinite;
+}
+
+.circle-2 {
+  bottom: 20%;
+  right: 15%;
+  width: 80px;
+  height: 80px;
+  animation: float 8s ease-in-out infinite reverse;
+}
+
+.circle-3 {
+  top: 60%;
+  left: 5%;
+  width: 60px;
+  height: 60px;
+  animation: float 10s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.3;
+  }
+}
+
+/* 功能亮点区域 */
+.features-section {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 60px 0;
+}
+
+.features-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.features-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 50px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  align-items: start;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.feature-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 0;
+    text-align: center;
+  }
+  
+  .left-section {
+    padding: 60px 40px;
+  }
+  
+  .right-section {
+    padding: 40px 40px 60px;
+  }
+  
+  .illustration {
+    width: 320px;
+    height: 400px;
+  }
+  
+  .character-image {
+    width: 240px;
+    height: 300px;
+  }
+  
+  .subtitle {
+    max-width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .left-section {
+    padding: 50px 30px;
+  }
+  
+  .right-section {
+    padding: 30px 30px 50px;
+  }
+  
+  .illustration {
+    width: 280px;
+    height: 350px;
+  }
+  
+  .character-image {
+    width: 200px;
+    height: 250px;
+  }
+  
+  .input-wrapper {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .example-quotes {
+    gap: 6px;
+  }
+  
+  .example-quote {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  /* 调整气泡位置和大小 */
+  .sad-bubble, .angry-bubble, .happy-bubble, .neutral-bubble {
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  .left-section {
+    padding: 30px 20px;
+  }
+  
+  .right-section {
+    padding: 20px 20px 30px;
+  }
+  
+  .illustration {
+    width: 240px;
+    height: 300px;
+  }
+  
+  .character-image {
+    width: 170px;
+    height: 210px;
+  }
+  
+  .title {
+    font-size: clamp(2rem, 8vw, 2.5rem);
+  }
+  
+  .subtitle {
+    font-size: 16px;
+  }
+  
+  .input-field {
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+  
+  .example-quote {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+  
+  /* 进一步缩小气泡 */
+  .sad-bubble, .angry-bubble, .happy-bubble, .neutral-bubble {
+    transform: scale(0.7);
+  }
+  
+  .bubble-label {
+    font-size: 9px;
+  }
+}
+
+/* 功能亮点区域响应式 */
+@media (max-width: 768px) {
+  .features-section {
+    padding: 40px 0;
+  }
+  
+  .features-container {
+    padding: 0 20px;
+  }
+  
+  .features-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .feature-card {
+    padding: 25px;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+  }
+  
+  .feature-title {
+    font-size: 1.3rem;
+  }
+  
+  .feature-description {
+    font-size: 0.9rem;
+  }
+}
+</style>

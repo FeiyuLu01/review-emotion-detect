@@ -1,21 +1,19 @@
 <template>
   <a-layout class="layout">
-    <a-layout-header class="layout__header">
-      <TopBar />
-    </a-layout-header>
+    <!-- Topbar（不改你的逻辑与样式） -->
+    <TopBar />
 
+    <!-- Main content -->
     <a-layout-content class="layout__content">
-      <div class="container">
-        <slot />
-      </div>
+      <slot />
     </a-layout-content>
 
-    <!-- 用 ref 获取 Footer 组件实例；稍后用 $el 取真实元素 -->
-    <a-layout-footer ref="footerRef" class="layout__footer">
+    <!-- Footer -->
+    <!-- <a-layout-footer ref="footerRef" class="layout__footer">
       <FooterBar />
-    </a-layout-footer>
+    </a-layout-footer> -->
 
-    <!-- Back-to-Top：bottom 随 footer 是否可见动态调整 -->
+    <!-- Back-to-Top -->
     <a-back-top
       :visibilityHeight="threshold"
       :style="{ right: '28px', bottom: backTopBottom + 'px' }"
@@ -42,51 +40,40 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import TopBar from '@/components/common/TopBar.vue'
 import FooterBar from '@/components/common/FooterBar.vue'
 
-/** ===== Visibility threshold (show when scrolled ~half viewport, capped) ===== */
+/* ===== BackTop 出现阈值：随视口变化 ===== */
 const threshold = ref(240)
 function updateThreshold() {
   const half = Math.round(window.innerHeight * 0.5)
   threshold.value = Math.max(180, Math.min(half, 360))
 }
 
-/** ===== Footer in-view detection to avoid overlap ===== */
-const footerRef = ref(null)          // component instance or element
+/* ===== 观察 Footer 是否进入视口，避免 BackTop 与 Footer 重叠 ===== */
+const footerRef = ref(null)
 const footerInView = ref(false)
 let io = null
-
 const backTopBottom = computed(() => (footerInView.value ? 88 : 28))
 
 onMounted(async () => {
   updateThreshold()
   window.addEventListener('resize', updateThreshold)
-
-  // 等 DOM 真正挂载后再取元素
   await nextTick()
 
-  // 兼容组件 / 原生元素两种情况
-  let footerEl = footerRef.value
-  // ant-design-vue 组件实例有 $el
-  if (footerEl && footerEl.$el) footerEl = footerEl.$el
+  // 兼容不同渲染形态，尽可能取到真实 DOM
+  let el = footerRef.value
+  el = el?.$el ?? el
+  // ant-design-vue v3+ 这里一般已经是真实 DOM；若仍是组件，取 $el
+  if (el && el.nodeType !== 1 && el.$el) el = el.$el
 
-  // 只有在拿到原生 Element 时才去 observe，避免报错
-  if (footerEl instanceof Element) {
+  if (el instanceof Element) {
     io = new IntersectionObserver(
-      entries => {
-        footerInView.value = !!entries[0]?.isIntersecting
-      },
-      { root: null, threshold: 0.01 }
+      (entries) => { footerInView.value = !!entries[0]?.isIntersecting },
+      {
+        root: null,
+        threshold: 0,               // 只要有一丁点进入就算
+        rootMargin: '0px 0px -10% 0px', // 提前一点点触发，体验更稳
+      }
     )
-    io.observe(footerEl)
-  } else {
-    // 兜底：找 class 选一次（极端情况下）
-    const fallback = document.querySelector('.layout__footer')
-    if (fallback) {
-      io = new IntersectionObserver(
-        entries => { footerInView.value = !!entries[0]?.isIntersecting },
-        { root: null, threshold: 0.01 }
-      )
-      io.observe(fallback)
-    }
+    io.observe(el)
   }
 })
 
@@ -98,78 +85,63 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 可配置的头部高度（默认 64px） */
+:root { --header-h: 64px; }
+
 .layout {
   min-height: 100vh;
   position: relative;
-}
-.layout__header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: saturate(160%) blur(10px);
-  background: rgba(255, 255, 255, .55);
-  border-bottom: 1px solid rgba(15, 23, 42, .06);
-}
-.layout__content { padding: 32px 0 48px 0; }
-.layout__footer  { background: transparent; padding: 12px 0 32px 0; }
-
-/* BackTop 固定在右下；bottom 由内联 :style 控制 */
-:deep(.ant-back-top) {
-  position: fixed;
-  right: 28px;
-  z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 漂亮的玻璃渐变按钮 */
-.backtop-btn {
+
+/* 内容区给 header 腾出空间 */
+.layout__content {
+  background: transparent;
+}
+
+/* Footer：不收缩，背景使用站点色 */
+.layout__footer  {
+  background: var(--ml-bg-color);
   position: relative;
-  width: 48px;
-  height: 48px;
-  border: none;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  z-index: 2;
+  padding: 12px 0 32px 0;
+  flex-shrink: 0;               /* ✅ 杜绝极少数场景被压缩 */
+}
 
-  color: #fff;
+/* Back-to-top 固定在右下，带炫酷按钮样式 */
+:deep(.ant-back-top) { position: fixed; right: 28px; z-index: 1000; }
+.backtop-btn {
+  position: relative; width: 48px; height: 48px; border: none; border-radius: 999px;
+  display: grid; place-items: center; cursor: pointer; color: #fff;
   background: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
-  box-shadow:
-    0 12px 28px rgba(16,24,40,.24),
-    inset 0 0 0 1px rgba(255,255,255,.22);
+  box-shadow: 0 12px 28px rgba(16,24,40,.24), inset 0 0 0 1px rgba(255,255,255,.22);
   backdrop-filter: blur(6px) saturate(140%);
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
-.backtop-btn .backtop-ring {
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: conic-gradient(from 180deg,
-    rgba(124,58,237,.65),
-    rgba(6,182,212,.65),
-    rgba(124,58,237,.65));
-  filter: blur(6px);
-  opacity: .35;
-  z-index: -1;
-  transition: opacity .2s ease, filter .2s ease;
+.backtop-btn .backtop-ring{
+  position: absolute; inset: -2px; border-radius: inherit;
+  background: conic-gradient(from 180deg, rgba(124,58,237,.65), rgba(6,182,212,.65), rgba(124,58,237,.65));
+  filter: blur(6px); opacity: .35; z-index: -1; transition: opacity .2s ease, filter .2s ease;
 }
-.backtop-btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 16px 34px rgba(16,24,40,.28);
-  filter: brightness(1.05);
-}
+.backtop-btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 16px 34px rgba(16,24,40,.28); filter: brightness(1.05); }
 .backtop-btn:hover .backtop-ring { opacity: .55; filter: blur(8px); }
 .backtop-btn:active { transform: translateY(0) scale(.98); }
-.backtop-btn:focus-visible {
-  outline: 3px solid rgba(124,58,237,.45);
-  outline-offset: 2px;
+.backtop-btn:focus-visible { outline: 3px solid rgba(124,58,237,.45); outline-offset: 2px; }
+
+:deep(.ant-back-top .ant-back-top-content) { animation: bt-in .18s ease-out both; }
+@keyframes bt-in { from { opacity: 0; transform: scale(.92);} to { opacity: 1; transform: scale(1);} }
+
+/* 让 TopBar 根元素吃满 header 高度并成为 flex 容器 */
+.layout__header :deep(> *) {
+  height: var(--header-h);       /* 关键：跟 header 一样高 */
+  display: flex;                 /* 自身也用 flex */
+  align-items: center;           /* 垂直居中 TopBar 内的内容 */
 }
 
-/* BackTop 出现时的轻微入场动画 */
-:deep(.ant-back-top .ant-back-top-content) {
-  animation: bt-in .18s ease-out both;
-}
-@keyframes bt-in {
-  from { opacity: 0; transform: scale(.92); }
-  to   { opacity: 1; transform: scale(1); }
+.layout__header :deep(.ant-menu-horizontal) {
+  height: var(--header-h);
+  line-height: var(--header-h);
 }
 </style>

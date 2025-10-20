@@ -28,6 +28,7 @@ public class QuestionnaireRepositoryImpl implements QuestionnaireRepository {
             comment.setId(rs.getInt("comment_id"));
             comment.setTextNatural(rs.getString("text_natural"));
             comment.setFineLabels(rs.getString("fine_labels"));
+            comment.setScenario(rs.getString("scenario"));
             comment.setEkmanLabels(rs.getString("ekman_labels"));
             comment.setScenario(rs.getString("scenario"));
             return comment;
@@ -36,7 +37,7 @@ public class QuestionnaireRepositoryImpl implements QuestionnaireRepository {
 
     @Override
     public List<LabeledComment> findRandomLabeledComments(int limit) {
-        // Use scenarios_comments table with correct field names
+        // Try scenarios_comments table first
         String sql = "SELECT comment_id, scenario, text_natural, fine_labels, ekman_labels FROM scenarios_comments ORDER BY RAND() LIMIT ?";
         System.out.println("Executing SQL: " + sql + " with limit: " + limit);
         try {

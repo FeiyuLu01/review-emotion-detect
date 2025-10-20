@@ -20,6 +20,9 @@ public class QuestionnaireItem {
     @JsonProperty("scenario")
     private String scenario;
 
+    @JsonProperty("scenario")
+    private String scenario;
+
     public QuestionnaireItem(String type, String review, String scenario) {
         this.type = type;
         this.review = review;

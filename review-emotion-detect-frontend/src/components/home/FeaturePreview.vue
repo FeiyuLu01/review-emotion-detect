@@ -4,7 +4,7 @@
         <h3 class="fp__title">Preview the result</h3>
   
         <p class="fp__desc">
-          Paste a short review and see a quick demo. Full analysis is on the Analyze page.
+          Paste a short review and see a quick demo. Full analysis is on the Analyse page.
         </p>
   
         <div class="fp__body">
