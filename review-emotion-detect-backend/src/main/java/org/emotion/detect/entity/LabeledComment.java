@@ -16,6 +16,9 @@ public class LabeledComment {
     
     /** Ekman emotion label assigned to this comment (corresponds to ekman_labels field) */
     private String ekmanLabels;
+    
+    /** Scenario information for this comment */
+    private String scenario;
 
     public Integer getId() {
         return id;
@@ -55,5 +58,13 @@ public class LabeledComment {
 
     public void setEkmanLabels(String ekmanLabels) {
         this.ekmanLabels = ekmanLabels;
+    }
+
+    public String getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(String scenario) {
+        this.scenario = scenario;
     }
 }

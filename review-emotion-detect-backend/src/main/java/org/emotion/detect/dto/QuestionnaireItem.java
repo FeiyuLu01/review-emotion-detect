@@ -16,6 +16,9 @@ public class QuestionnaireItem {
     /** The review text content */
     @JsonProperty("review")
     private String review;
+    /** The scenario information */
+    @JsonProperty("scenario")
+    private String scenario;
 
     @JsonProperty("scenario")
     private String scenario;

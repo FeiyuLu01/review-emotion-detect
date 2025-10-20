@@ -30,6 +30,7 @@ public class QuestionnaireRepositoryImpl implements QuestionnaireRepository {
             comment.setFineLabels(rs.getString("fine_labels"));
             comment.setScenario(rs.getString("scenario"));
             comment.setEkmanLabels(rs.getString("ekman_labels"));
+            comment.setScenario(rs.getString("scenario"));
             return comment;
         }
     };
